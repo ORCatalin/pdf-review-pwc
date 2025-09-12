@@ -1,0 +1,618 @@
+.pdf-review-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f5f5f5;
+}
+
+.pdf-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pdf-review-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.mode-selector {
+  display: flex;
+  gap: 0.5rem;
+  background: #f8f9fa;
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.mode-button {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #6c757d;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.mode-button:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.mode-button.active {
+  background: #007bff;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.upload-button {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.upload-button:hover {
+  background: #0056b3;
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat {
+  padding: 0.25rem 0.75rem;
+  background: #f0f0f0;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.pdf-review-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Issues Table Styles */
+.issues-table-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.issues-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.issues-table-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.issues-table-wrapper {
+  flex: 1;
+  overflow: auto;
+}
+
+.issues-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.issues-table thead {
+  background: #f8f9fa;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.issues-table th {
+  text-align: left;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 2px solid #dee2e6;
+  color: #495057;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.issues-table tbody tr {
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.issues-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.issues-table tbody tr.selected {
+  background-color: #e7f3ff;
+}
+
+.issues-table td {
+  padding: 0.75rem 0.5rem;
+  color: #212529;
+}
+
+.issue-id {
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.issue-page {
+  text-align: center;
+  font-weight: 500;
+}
+
+.description-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.has-highlight {
+  font-size: 0.9rem;
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: #e9ecef;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #495057;
+}
+
+.priority-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: white;
+  cursor: pointer;
+}
+
+.status-select.status-open {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.status-select.status-in-review {
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.status-select.status-resolved {
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.action-button {
+  padding: 0.25rem 0.5rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.action-button:hover {
+  background: #0056b3;
+}
+
+.no-issues {
+  padding: 2rem;
+  text-align: center;
+  color: #6c757d;
+}
+
+/* PDF Viewer Styles */
+.pdf-viewer-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.pdf-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.toolbar-button {
+  padding: 0.5rem 1rem;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.toolbar-button:hover {
+  background: #f8f9fa;
+}
+
+.toolbar-button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.toolbar-info {
+  flex: 1;
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.page-info {
+  padding: 0.25rem 0.75rem;
+  background: #f0f0f0;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.pdf-content {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  background: #525659;
+}
+
+.pdf-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #6c757d;
+  font-size: 1.2rem;
+}
+
+/* Comment Popup Styles */
+.comment-popup {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 300px;
+}
+
+.comment-popup-content {
+  padding: 1rem;
+}
+
+.comment-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.comment-popup-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  color: #333;
+}
+
+.emoji-selector {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.emoji-button {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.25rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+}
+
+.emoji-button:hover {
+  background: #f8f9fa;
+}
+
+.emoji-button.selected {
+  background: #007bff;
+  border-color: #007bff;
+}
+
+.comment-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.comment-popup-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.cancel-button,
+.confirm-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.cancel-button {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.cancel-button:hover {
+  background: #e9ecef;
+}
+
+.confirm-button {
+  background: #007bff;
+  color: white;
+}
+
+.confirm-button:hover {
+  background: #0056b3;
+}
+
+.confirm-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Highlight Popup Styles */
+.highlight-popup {
+  padding: 0.75rem;
+  max-width: 250px;
+}
+
+.comment-emoji {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.comment-text {
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.highlight-text {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.delete-highlight {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.delete-highlight:hover {
+  background: #c82333;
+}
+
+/* Drag Rectangle Styles */
+.drag-rectangle-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.drag-rectangle-overlay.enabled {
+  pointer-events: all;
+  cursor: crosshair;
+}
+
+.drawing-rectangle {
+  position: absolute;
+  border: 2px dashed #007bff;
+  background: rgba(0, 123, 255, 0.1);
+  pointer-events: none;
+}
+
+.coordinates-tooltip {
+  position: absolute;
+  top: -25px;
+  left: 0;
+  background: #333;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.drawn-rectangle {
+  position: absolute;
+  border: 2px solid #28a745;
+  background: rgba(40, 167, 69, 0.1);
+  pointer-events: none;
+}
+
+.rectangle-info {
+  position: absolute;
+  top: -20px;
+  right: 0;
+  background: #28a745;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+}
+
+/* PDF Highlighter Overrides */
+.PdfHighlighter {
+  height: 100%;
+}
+
+.PdfHighlighter__container {
+  height: 100%;
+}
+
+.PdfHighlighter__highlight-layer {
+  z-index: 1;
+}
+
+.Highlight {
+  background: rgba(255, 226, 143, 0.4);
+  transition: background 0.3s;
+}
+
+.Highlight--scrolledTo {
+  background: rgba(255, 196, 0, 0.6);
+}
+
+.Highlight__emoji {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  font-size: 1.2rem;
+}
+
+.Highlight__part {
+  transition: background 0.3s;
+}
+
+.AreaHighlight {
+  border: 2px solid rgba(255, 226, 143, 0.8);
+  background: rgba(255, 226, 143, 0.2);
+}
+
+.AreaHighlight--scrolledTo {
+  border-color: rgba(255, 196, 0, 0.8);
+  background: rgba(255, 196, 0, 0.3);
+}
+
+/* Temporary selection highlighting */
+.PdfHighlighter [data-highlight-id="temp-highlight"] .Highlight__part {
+  background: rgba(0, 123, 255, 0.4) !important;
+  border: 1px solid rgba(0, 123, 255, 0.6) !important;
+  box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.3) !important;
+  animation: pulse-selection 2s infinite !important;
+}
+
+.PdfHighlighter [data-highlight-id="temp-highlight"] .Highlight {
+  background: rgba(0, 123, 255, 0.4) !important;
+  animation: pulse-selection 2s infinite !important;
+}
+
+@keyframes pulse-selection {
+  0%, 100% {
+    background: rgba(0, 123, 255, 0.3);
+  }
+  50% {
+    background: rgba(0, 123, 255, 0.4);
+  }
+}
+
+/* User text selection should be visible */
+::selection {
+  background: rgba(0, 123, 255, 0.3);
+}
+
+::-moz-selection {
+  background: rgba(0, 123, 255, 0.3);
+}
