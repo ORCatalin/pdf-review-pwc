@@ -18,7 +18,7 @@ interface PDFViewerProps {
   pdfUrl: string;
   highlights: IHighlight[];
   selectedHighlight?: IHighlight;
-  onAddHighlight: (highlight: IHighlight) => void;
+  onAddHighlight: (highlight: IHighlight, priority?: 'low' | 'medium' | 'high') => void;
   onUpdateHighlight: (highlightId: string, update: Partial<IHighlight>) => void;
   onDeleteHighlight: (highlightId: string) => void;
   onRectangleDrawn: (rectangle: RectangleWithComment) => void;
@@ -149,26 +149,26 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
     };
   };
 
-  handleCommentConfirm = (comment: { text: string; emoji?: string }) => {
+  handleCommentConfirm = (comment: { text: string; emoji?: string; priority?: 'low' | 'medium' | 'high' }) => {
     const { pendingHighlight, pendingRectangle } = this.state;
-    
+
     if (pendingHighlight) {
       const newHighlight: IHighlight = {
         id: uuidv4(),
         position: pendingHighlight.position,
         content: pendingHighlight.content,
-        comment,
+        comment: { text: comment.text, emoji: comment.emoji },
         timestamp: Date.now(),
       };
 
-      this.props.onAddHighlight(newHighlight);
+      this.props.onAddHighlight(newHighlight, comment.priority);
       pendingHighlight.hideTipAndSelection();
       pendingHighlight.transformSelection();
     } else if (pendingRectangle) {
       const newRectangle: RectangleWithComment = {
         id: uuidv4(),
         ...pendingRectangle,
-        comment,
+        comment: { text: comment.text, emoji: comment.emoji },
       };
 
       this.props.onRectangleDrawn(newRectangle);
@@ -264,7 +264,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
                 pdfDocument={pdfDocument}
                 enableAreaSelection={() => currentMode === InteractionMode.RECTANGLE}
                 onSelectionFinished={this.handleTextSelection}
-                scrollRef={this.containerRef}
+                scrollRef={() => {}}
                 onScrollChange={() => {
                   const pages = document.querySelectorAll('.page');
                   let currentPage = 1;
@@ -345,7 +345,10 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
                     </Popup>
                   );
                 }}
-                highlights={allHighlights as any}
+                highlights={allHighlights.map(h => ({
+                  ...h,
+                  comment: h.comment || { text: '', emoji: '' }
+                }))}
               />
             )}
           </PdfLoader>

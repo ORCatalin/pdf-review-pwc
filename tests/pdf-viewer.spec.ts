@@ -95,16 +95,16 @@ test.describe('PDF Viewer', () => {
   });
 
   test('is contained within right panel', async ({ page }) => {
-    const rightPanel = page.locator('.right-panel');
+    const rightPanel = page.locator('.resizable-right-panel');
     const pdfViewer = page.locator('.pdf-content');
-    
+
     await expect(rightPanel).toBeVisible();
     await expect(pdfViewer).toBeVisible();
-    
+
     // PDF viewer should be inside the right panel
     const rightPanelBox = await rightPanel.boundingBox();
     const viewerBox = await pdfViewer.boundingBox();
-    
+
     if (rightPanelBox && viewerBox) {
       expect(viewerBox.x).toBeGreaterThanOrEqual(rightPanelBox.x);
       expect(viewerBox.y).toBeGreaterThanOrEqual(rightPanelBox.y);

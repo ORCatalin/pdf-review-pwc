@@ -81,21 +81,19 @@ test.describe('PDF Review App', () => {
     await expect(rightPanel).toBeVisible();
   });
 
-  test('handles mock issue data', async ({ page }) => {
-    // Wait for mock data to load
-    await page.waitForTimeout(1000);
-    
-    // Check if any issue rows are visible (mock data should be loaded)
-    const issueRows = page.locator('tbody tr');
-    await expect(issueRows.first()).toBeVisible();
-    
-    // Check that statistics reflect the mock data
+  test('handles empty state and statistics correctly', async ({ page }) => {
+    // Check that statistics start at zero (no hardcoded data)
     const openCount = await page.locator('.stat').filter({ hasText: 'Open:' }).textContent();
     const inReviewCount = await page.locator('.stat').filter({ hasText: 'In Review:' }).textContent();
     const resolvedCount = await page.locator('.stat').filter({ hasText: 'Resolved:' }).textContent();
-    
-    expect(openCount).toMatch(/Open: \d+/);
-    expect(inReviewCount).toMatch(/In Review: \d+/);
-    expect(resolvedCount).toMatch(/Resolved: \d+/);
+
+    expect(openCount).toMatch(/Open: 0/);
+    expect(inReviewCount).toMatch(/In Review: 0/);
+    expect(resolvedCount).toMatch(/Resolved: 0/);
+
+    // Check that empty state message is shown
+    const noIssuesMessage = page.locator('.no-issues');
+    await expect(noIssuesMessage).toBeVisible();
+    await expect(noIssuesMessage).toContainText('No issues found');
   });
 });

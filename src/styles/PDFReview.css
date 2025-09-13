@@ -221,6 +221,32 @@
   color: #28a745;
 }
 
+.priority-select {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: white;
+  cursor: pointer;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.priority-select.priority-low {
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.priority-select.priority-medium {
+  border-color: #ffc107;
+  color: #ffc107;
+}
+
+.priority-select.priority-high {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
 .action-button {
   padding: 0.25rem 0.5rem;
   background: #007bff;
@@ -381,6 +407,61 @@
   border-color: #007bff;
 }
 
+.priority-selector {
+  margin: 0.75rem 0;
+}
+
+.priority-selector label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.priority-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.priority-button {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: #f8f9fa;
+  color: #333;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.priority-button:hover {
+  background: #e9ecef;
+}
+
+.priority-button.selected {
+  color: white;
+}
+
+.priority-button.priority-low.selected {
+  background: #28a745;
+  border-color: #28a745;
+}
+
+.priority-button.priority-medium.selected {
+  background: #ffc107;
+  border-color: #ffc107;
+  color: #333;
+}
+
+.priority-button.priority-high.selected {
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
 .comment-textarea {
   width: 100%;
   min-height: 80px;
@@ -436,6 +517,10 @@
 .highlight-popup {
   padding: 0.75rem;
   max-width: 250px;
+  background: white !important;
+  border: 1px solid #ddd !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .comment-emoji {
@@ -446,13 +531,14 @@
 
 .comment-text {
   font-size: 0.9rem;
-  color: #333;
+  color: #333 !important;
   margin-bottom: 0.5rem;
+  font-weight: 500;
 }
 
 .highlight-text {
   font-size: 0.85rem;
-  color: #6c757d;
+  color: #6c757d !important;
   font-style: italic;
   margin-top: 0.5rem;
   padding-top: 0.5rem;
@@ -473,6 +559,38 @@
 
 .delete-highlight:hover {
   background: #c82333;
+}
+
+/* Override react-pdf-highlighter tip container styles */
+div[class*="_tipContainer"] {
+  z-index: 1000 !important;
+}
+
+/* Override react-pdf-highlighter card/popup styles */
+div[class*="_card"] {
+  background: white !important;
+  opacity: 1 !important;
+  border: 1px solid #dee2e6 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 6px !important;
+  padding: 12px !important;
+}
+
+/* Ensure text in popups is visible */
+div[class*="_card"] * {
+  color: #333 !important;
+  opacity: 1 !important;
+}
+
+/* Override compact tip styles */
+div[class*="_compact"] {
+  background-color: white !important;
+  border: 1px solid #dee2e6 !important;
+  color: #333 !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  opacity: 1 !important;
 }
 
 /* Drag Rectangle Styles */

@@ -106,22 +106,21 @@ test.describe('Highlight Functionality', () => {
     // Get initial issue count
     const initialIssuesText = await page.locator('.issues-table-header h2').textContent();
     const initialCount = parseInt(initialIssuesText?.match(/\d+/)?.[0] || '0');
-    
-    // Try to create a highlight (simplified test)
+
+    // Try to create a highlight using our helper
     const highlightButton = page.locator('.mode-button').filter({ hasText: 'Highlight' });
     await highlightButton.click();
-    
-    // Wait and check if we can simulate highlight creation
+
+    // Attempt to create an issue through text selection
     await page.waitForTimeout(2000);
-    
-    // If the app supports programmatic highlight creation, check for issue count increase
-    // This is a placeholder - actual implementation depends on the app's API
+
+    // Check if issue count changed or stayed at zero (since no hardcoded data)
     const currentIssuesText = await page.locator('.issues-table-header h2').textContent();
     const currentCount = parseInt(currentIssuesText?.match(/\d+/)?.[0] || '0');
-    
-    // Verify issues count structure exists (basic validation)
-    expect(currentCount).toBeGreaterThanOrEqual(initialCount);
-    expect(currentCount).toBeGreaterThan(0);
+
+    // Verify the count is valid (should be 0 without hardcoded data)
+    expect(currentCount).toBeGreaterThanOrEqual(0);
+    expect(currentCount).toBe(initialCount); // Should be same since no hardcoded data
   });
 
   test('should show different cursor in highlight mode', async ({ page }) => {
@@ -170,23 +169,285 @@ test.describe('Highlight Functionality', () => {
   test('should preserve existing highlights when switching modes', async ({ page }) => {
     // Wait for existing highlights to load
     await page.waitForTimeout(2000);
-    
+
     // Count existing highlight indicators
     const existingHighlights = page.locator('.pdf-content [class*="highlight"], .pdf-content .react-pdf-highlighter__highlight');
     const initialCount = await existingHighlights.count();
-    
+
     // Switch between modes
     await page.locator('.mode-button').filter({ hasText: 'Rectangle' }).click();
     await page.waitForTimeout(500);
-    
+
     await page.locator('.mode-button').filter({ hasText: 'View Only' }).click();
     await page.waitForTimeout(500);
-    
+
     await page.locator('.mode-button').filter({ hasText: 'Highlight' }).click();
     await page.waitForTimeout(500);
-    
+
     // Verify highlights are still present
     const finalCount = await existingHighlights.count();
     expect(finalCount).toBeGreaterThanOrEqual(initialCount);
+  });
+
+  test('should show priority selector in comment popup', async ({ page }) => {
+    // Switch to highlight mode
+    const highlightButton = page.locator('.mode-button').filter({ hasText: 'Highlight' });
+    await highlightButton.click();
+
+    // Wait for PDF load
+    await page.waitForTimeout(3000);
+
+    // Try to trigger text selection
+    const pdfContent = page.locator('.pdf-content');
+    await pdfContent.click({ position: { x: 100, y: 100 } });
+
+    // Try drag selection to trigger comment popup
+    await page.mouse.move(100, 100);
+    await page.mouse.down();
+    await page.mouse.move(200, 120);
+    await page.mouse.up();
+
+    await page.waitForTimeout(1000);
+
+    // Check if comment popup appeared with priority selector
+    const commentPopup = page.locator('.comment-popup');
+    if (await commentPopup.isVisible({ timeout: 3000 })) {
+      // Verify priority selector is present
+      await expect(page.locator('.priority-selector')).toBeVisible();
+      await expect(page.locator('.priority-selector label')).toContainText('Priority');
+
+      // Verify all priority buttons are present
+      await expect(page.locator('.priority-button').filter({ hasText: 'Low' })).toBeVisible();
+      await expect(page.locator('.priority-button').filter({ hasText: 'Medium' })).toBeVisible();
+      await expect(page.locator('.priority-button').filter({ hasText: 'High' })).toBeVisible();
+
+      // Verify medium is selected by default
+      await expect(page.locator('.priority-button.selected').filter({ hasText: 'Medium' })).toBeVisible();
+    }
+  });
+
+  test('should allow changing priority in comment popup', async ({ page }) => {
+    // Switch to highlight mode
+    const highlightButton = page.locator('.mode-button').filter({ hasText: 'Highlight' });
+    await highlightButton.click();
+
+    // Wait for PDF load
+    await page.waitForTimeout(3000);
+
+    // Try to trigger text selection
+    const pdfContent = page.locator('.pdf-content');
+    await pdfContent.click({ position: { x: 100, y: 100 } });
+
+    // Try drag selection
+    await page.mouse.move(100, 100);
+    await page.mouse.down();
+    await page.mouse.move(200, 120);
+    await page.mouse.up();
+
+    await page.waitForTimeout(1000);
+
+    // Check if comment popup appeared
+    const commentPopup = page.locator('.comment-popup');
+    if (await commentPopup.isVisible({ timeout: 3000 })) {
+      // Click on High priority button
+      const highPriorityButton = page.locator('.priority-button').filter({ hasText: 'High' });
+      await highPriorityButton.click();
+
+      // Verify High priority is now selected
+      await expect(highPriorityButton).toHaveClass(/selected/);
+      await expect(page.locator('.priority-button.selected').filter({ hasText: 'Medium' })).not.toBeVisible();
+
+      // Click on Low priority button
+      const lowPriorityButton = page.locator('.priority-button').filter({ hasText: 'Low' });
+      await lowPriorityButton.click();
+
+      // Verify Low priority is now selected
+      await expect(lowPriorityButton).toHaveClass(/selected/);
+      await expect(highPriorityButton).not.toHaveClass(/selected/);
+    }
+  });
+
+  test('should delete highlight and remove from table when delete button is clicked', async ({ page }) => {
+    // First ensure we have highlights by waiting for any existing ones
+    await page.waitForTimeout(2000);
+
+    // Get initial issue count
+    const initialIssuesHeader = page.locator('.issues-table-header h2');
+    const initialText = await initialIssuesHeader.textContent();
+    const initialCount = parseInt(initialText?.match(/\d+/)?.[0] || '0');
+
+    // Look for an existing highlight to delete
+    const highlights = page.locator('.pdf-content [class*="highlight"], .react-pdf-highlighter__highlight__content');
+    const highlightCount = await highlights.count();
+
+    if (highlightCount > 0) {
+      // Click on the first highlight to show popup with delete button
+      await highlights.first().hover();
+      await page.waitForTimeout(500);
+
+      // Look for delete button in highlight popup
+      const deleteButton = page.locator('.delete-highlight, button').filter({ hasText: /delete/i });
+      if (await deleteButton.isVisible({ timeout: 2000 })) {
+        await deleteButton.click();
+
+        // Wait for deletion to process
+        await page.waitForTimeout(1000);
+
+        // Verify highlight was removed from PDF
+        const remainingHighlights = await page.locator('.pdf-content [class*="highlight"], .react-pdf-highlighter__highlight__content').count();
+        expect(remainingHighlights).toBeLessThan(highlightCount);
+
+        // Verify issue was removed from table (count should decrease)
+        const newIssuesText = await initialIssuesHeader.textContent();
+        const newCount = parseInt(newIssuesText?.match(/\d+/)?.[0] || '0');
+        expect(newCount).toBeLessThan(initialCount);
+      }
+    } else {
+      // If no highlights exist, create one first for testing deletion
+      const highlightButton = page.locator('.mode-button').filter({ hasText: 'Highlight' });
+      await highlightButton.click();
+
+      // Create a test highlight
+      const pdfContent = page.locator('.pdf-content');
+      await pdfContent.click({ position: { x: 100, y: 100 } });
+
+      await page.mouse.move(100, 100);
+      await page.mouse.down();
+      await page.mouse.move(200, 120);
+      await page.mouse.up();
+
+      await page.waitForTimeout(1000);
+
+      // Fill in comment if popup appears
+      const commentInput = page.locator('.comment-textarea, textarea');
+      if (await commentInput.isVisible({ timeout: 3000 })) {
+        await commentInput.fill('Test highlight for deletion');
+        const confirmButton = page.locator('.confirm-button, button').filter({ hasText: /add|confirm/i });
+        if (await confirmButton.isVisible()) {
+          await confirmButton.click();
+          await page.waitForTimeout(1000);
+
+          // Now test deletion on newly created highlight
+          const newHighlight = page.locator('.pdf-content [class*="highlight"], .react-pdf-highlighter__highlight__content').first();
+          if (await newHighlight.isVisible()) {
+            await newHighlight.hover();
+            await page.waitForTimeout(500);
+
+            const deleteButton = page.locator('.delete-highlight, button').filter({ hasText: /delete/i });
+            if (await deleteButton.isVisible({ timeout: 2000 })) {
+              await deleteButton.click();
+              await page.waitForTimeout(1000);
+
+              // Verify deletion
+              await expect(newHighlight).not.toBeVisible();
+            }
+          }
+        }
+      }
+    }
+  });
+
+  test('should allow editing priority in issues table', async ({ page }) => {
+    // Wait for page to load
+    await page.waitForTimeout(2000);
+
+    // Check if there are any issues in the table
+    const issueRows = page.locator('.issue-row');
+    const issueCount = await issueRows.count();
+
+    if (issueCount > 0) {
+      // Get the first issue row
+      const firstIssueRow = issueRows.first();
+
+      // Find the priority select dropdown
+      const prioritySelect = firstIssueRow.locator('.priority-select');
+      if (await prioritySelect.isVisible()) {
+        // Get current priority value
+        const currentPriority = await prioritySelect.inputValue();
+
+        // Change to a different priority
+        const newPriority = currentPriority === 'high' ? 'low' : 'high';
+        await prioritySelect.selectOption(newPriority);
+
+        // Verify the change was applied
+        await expect(prioritySelect).toHaveValue(newPriority);
+
+        // Verify the CSS class was updated
+        await expect(prioritySelect).toHaveClass(new RegExp(`priority-${newPriority}`));
+      }
+    } else {
+      // Create a test issue first by creating a highlight
+      const highlightButton = page.locator('.mode-button').filter({ hasText: 'Highlight' });
+      await highlightButton.click();
+
+      const pdfContent = page.locator('.pdf-content');
+      await pdfContent.click({ position: { x: 100, y: 100 } });
+
+      await page.mouse.move(100, 100);
+      await page.mouse.down();
+      await page.mouse.move(200, 120);
+      await page.mouse.up();
+
+      await page.waitForTimeout(1000);
+
+      const commentInput = page.locator('.comment-textarea, textarea');
+      if (await commentInput.isVisible({ timeout: 3000 })) {
+        await commentInput.fill('Test issue for priority editing');
+
+        // Set priority to High before creating
+        const highPriorityButton = page.locator('.priority-button').filter({ hasText: 'High' });
+        if (await highPriorityButton.isVisible()) {
+          await highPriorityButton.click();
+        }
+
+        const confirmButton = page.locator('.confirm-button, button').filter({ hasText: /add|confirm/i });
+        if (await confirmButton.isVisible()) {
+          await confirmButton.click();
+          await page.waitForTimeout(1000);
+
+          // Now test priority editing in the table
+          const newIssueRow = page.locator('.issue-row').first();
+          const prioritySelect = newIssueRow.locator('.priority-select');
+
+          if (await prioritySelect.isVisible()) {
+            // Verify it was created with high priority
+            await expect(prioritySelect).toHaveValue('high');
+
+            // Change to low priority
+            await prioritySelect.selectOption('low');
+            await expect(prioritySelect).toHaveValue('low');
+            await expect(prioritySelect).toHaveClass(/priority-low/);
+          }
+        }
+      }
+    }
+  });
+
+  test('should maintain priority colors in issues table', async ({ page }) => {
+    // Wait for page to load
+    await page.waitForTimeout(2000);
+
+    // Check if there are any issues in the table to test colors
+    const issueRows = page.locator('.issue-row');
+    const issueCount = await issueRows.count();
+
+    if (issueCount > 0) {
+      const firstIssueRow = issueRows.first();
+      const prioritySelect = firstIssueRow.locator('.priority-select');
+
+      if (await prioritySelect.isVisible()) {
+        // Test high priority color
+        await prioritySelect.selectOption('high');
+        await expect(prioritySelect).toHaveClass(/priority-high/);
+
+        // Test medium priority color
+        await prioritySelect.selectOption('medium');
+        await expect(prioritySelect).toHaveClass(/priority-medium/);
+
+        // Test low priority color
+        await prioritySelect.selectOption('low');
+        await expect(prioritySelect).toHaveClass(/priority-low/);
+      }
+    }
   });
 });

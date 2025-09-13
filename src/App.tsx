@@ -1,4 +1,3 @@
-import React from 'react'
 import PDFReviewApp from './components/PDFReviewApp'
 import './App.css'
 

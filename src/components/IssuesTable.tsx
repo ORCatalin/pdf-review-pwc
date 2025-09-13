@@ -6,6 +6,7 @@ interface IssuesTableProps {
   selectedIssue: Issue | null;
   onIssueClick: (issue: Issue) => void;
   onUpdateStatus: (issueId: string, status: Issue['status']) => void;
+  onUpdatePriority: (issueId: string, priority: Issue['priority']) => void;
 }
 
 const IssuesTable: React.FC<IssuesTableProps> = ({
@@ -13,19 +14,8 @@ const IssuesTable: React.FC<IssuesTableProps> = ({
   selectedIssue,
   onIssueClick,
   onUpdateStatus,
+  onUpdatePriority,
 }) => {
-  const getPriorityColor = (priority: Issue['priority']) => {
-    switch (priority) {
-      case 'high':
-        return '#ff4444';
-      case 'medium':
-        return '#ffaa00';
-      case 'low':
-        return '#44aa44';
-      default:
-        return '#666666';
-    }
-  };
 
   const getStatusBadgeClass = (status: Issue['status']) => {
     switch (status) {
@@ -50,13 +40,13 @@ const IssuesTable: React.FC<IssuesTableProps> = ({
         <table className="issues-table">
           <thead>
             <tr>
-              <th width="80">ID</th>
-              <th width="50">Page</th>
+              <th style={{ width: '80px' }}>ID</th>
+              <th style={{ width: '50px' }}>Page</th>
               <th>Description</th>
-              <th width="100">Category</th>
-              <th width="80">Priority</th>
-              <th width="100">Status</th>
-              <th width="80">Actions</th>
+              <th style={{ width: '100px' }}>Category</th>
+              <th style={{ width: '80px' }}>Priority</th>
+              <th style={{ width: '100px' }}>Status</th>
+              <th style={{ width: '80px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -82,12 +72,19 @@ const IssuesTable: React.FC<IssuesTableProps> = ({
                   <span className="category-badge">{issue.category}</span>
                 </td>
                 <td className="issue-priority">
-                  <span
-                    className="priority-badge"
-                    style={{ backgroundColor: getPriorityColor(issue.priority) }}
+                  <select
+                    className={`priority-select priority-${issue.priority}`}
+                    value={issue.priority}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onUpdatePriority(issue.id, e.target.value as Issue['priority']);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {issue.priority}
-                  </span>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
                 </td>
                 <td className="issue-status">
                   <select

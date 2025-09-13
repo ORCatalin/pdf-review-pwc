@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 interface CommentPopupProps {
-  onConfirm: (comment: { text: string; emoji?: string }) => void;
+  onConfirm: (comment: { text: string; emoji?: string; priority?: 'low' | 'medium' | 'high' }) => void;
   onCancel: () => void;
   position: { x: number; y: number };
-  initialComment?: { text: string; emoji?: string };
+  initialComment?: { text: string; emoji?: string; priority?: 'low' | 'medium' | 'high' };
 }
 
 const CommentPopup: React.FC<CommentPopupProps> = ({
@@ -15,6 +15,7 @@ const CommentPopup: React.FC<CommentPopupProps> = ({
 }) => {
   const [comment, setComment] = useState(initialComment?.text || '');
   const [selectedEmoji, setSelectedEmoji] = useState(initialComment?.emoji || '');
+  const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high'>(initialComment?.priority || 'medium');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const emojis = ['📝', '⚠️', '🔴', '🟡', '🟢', '❓', '💡', '📊', '📋', '✅'];
@@ -25,7 +26,7 @@ const CommentPopup: React.FC<CommentPopupProps> = ({
 
   const handleSubmit = () => {
     if (comment.trim()) {
-      onConfirm({ text: comment.trim(), emoji: selectedEmoji });
+      onConfirm({ text: comment.trim(), emoji: selectedEmoji, priority: selectedPriority });
     }
   };
 
@@ -66,6 +67,21 @@ const CommentPopup: React.FC<CommentPopupProps> = ({
               {emoji}
             </button>
           ))}
+        </div>
+
+        <div className="priority-selector">
+          <label>Priority:</label>
+          <div className="priority-buttons">
+            {(['low', 'medium', 'high'] as const).map((priority) => (
+              <button
+                key={priority}
+                className={`priority-button priority-${priority} ${selectedPriority === priority ? 'selected' : ''}`}
+                onClick={() => setSelectedPriority(priority)}
+              >
+                {priority.charAt(0).toUpperCase() + priority.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
         
         <textarea

@@ -28,25 +28,25 @@ const PDFReviewApp: React.FC = () => {
     }
   }, []);
 
-  const handleAddHighlight = useCallback((highlight: IHighlight) => {
+  const handleAddHighlight = useCallback((highlight: IHighlight, priority: 'low' | 'medium' | 'high' = 'medium') => {
     const newHighlight = {
       ...highlight,
       id: uuidv4(),
       timestamp: Date.now(),
     };
-    
+
     setHighlights(prev => [...prev, newHighlight]);
-    
+
     const newIssue: Issue = {
       id: `ISSUE-${String(issues.length + 1).padStart(3, '0')}`,
       page: highlight.position.pageNumber,
       description: highlight.comment?.text || 'New highlight added',
       highlight: newHighlight,
       status: 'open',
-      priority: 'medium',
+      priority,
       category: 'User Review',
     };
-    
+
     setIssues(prev => [...prev, newIssue]);
   }, [issues.length]);
 
@@ -71,15 +71,9 @@ const PDFReviewApp: React.FC = () => {
 
   const handleDeleteHighlight = useCallback((highlightId: string) => {
     setHighlights(prev => prev.filter(h => h.id !== highlightId));
-    
-    setIssues(prev =>
-      prev.map(issue => {
-        if (issue.highlight?.id === highlightId) {
-          return { ...issue, highlight: undefined };
-        }
-        return issue;
-      })
-    );
+
+    // Remove the entire issue if it was created from this highlight
+    setIssues(prev => prev.filter(issue => issue.highlight?.id !== highlightId));
   }, []);
 
   const handleRectangleDrawn = useCallback((rectangle: RectangleWithComment) => {
@@ -98,6 +92,14 @@ const PDFReviewApp: React.FC = () => {
     setIssues(prev =>
       prev.map(issue =>
         issue.id === issueId ? { ...issue, status } : issue
+      )
+    );
+  }, []);
+
+  const handleUpdateIssuePriority = useCallback((issueId: string, priority: Issue['priority']) => {
+    setIssues(prev =>
+      prev.map(issue =>
+        issue.id === issueId ? { ...issue, priority } : issue
       )
     );
   }, []);
@@ -154,6 +156,7 @@ const PDFReviewApp: React.FC = () => {
               selectedIssue={selectedIssue}
               onIssueClick={handleIssueClick}
               onUpdateStatus={handleUpdateIssueStatus}
+              onUpdatePriority={handleUpdateIssuePriority}
             />
           }
           rightPanel={

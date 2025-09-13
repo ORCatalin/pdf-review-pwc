@@ -1,29 +1,29 @@
 import { test, expect } from '@playwright/test';
+import { createTestIssue, waitForAppLoad, hasIssues } from './test-helpers';
 
 test.describe('Integration Tests', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForTimeout(1000);
+    await waitForAppLoad(page);
   });
 
   test('issue selection updates PDF viewer', async ({ page }) => {
-    // Wait for mock data to load
-    await page.waitForTimeout(1500);
-    
+    // Create a test issue first
+    const created = await createTestIssue(page, 'Test issue for selection');
+    if (!created) test.skip();
+
     const issueRows = page.locator('tbody tr');
     const firstRow = issueRows.first();
-    
-    if (await issueRows.count() > 0) {
-      // Click on first issue
-      await firstRow.click();
-      
-      // Row should be selected
-      await expect(firstRow).toHaveClass(/selected/);
-      
-      // PDF viewer should still be visible (integration working)
-      const pdfViewer = page.locator('.pdf-content');
-      await expect(pdfViewer).toBeVisible();
-    }
+
+    // Click on first issue
+    await firstRow.click();
+
+    // Row should be selected
+    await expect(firstRow).toHaveClass(/selected/);
+
+    // PDF viewer should still be visible (integration working)
+    const pdfViewer = page.locator('.pdf-content');
+    await expect(pdfViewer).toBeVisible();
   });
 
   test('mode switching affects entire app state', async ({ page }) => {
@@ -49,31 +49,31 @@ test.describe('Integration Tests', () => {
   });
 
   test('statistics update with issue status changes', async ({ page }) => {
-    await page.waitForTimeout(1500);
-    
+    // Create a test issue first
+    const created = await createTestIssue(page, 'Test issue for status change');
+    if (!created) test.skip();
+
     const rows = page.locator('tbody tr');
-    
-    if (await rows.count() > 0) {
-      // Get initial stats
-      const initialOpenText = await page.locator('.stat').filter({ hasText: 'Open:' }).textContent();
-      const initialOpen = parseInt(initialOpenText?.match(/\d+/)?.[0] || '0');
-      
-      // Change first issue status
-      const firstRow = rows.first();
-      const statusSelect = firstRow.locator('select');
-      const currentStatus = await statusSelect.inputValue();
-      
-      // Change to different status
-      const newStatus = currentStatus === 'open' ? 'resolved' : 'open';
-      await statusSelect.selectOption(newStatus);
-      
-      // Wait for state to update
-      await page.waitForTimeout(500);
-      
-      // Check if stats updated (this depends on the app's implementation)
-      const updatedOpenText = await page.locator('.stat').filter({ hasText: 'Open:' }).textContent();
-      expect(updatedOpenText).toBeTruthy();
-    }
+
+    // Get initial stats
+    const initialOpenText = await page.locator('.stat').filter({ hasText: 'Open:' }).textContent();
+    const initialOpen = parseInt(initialOpenText?.match(/\d+/)?.[0] || '0');
+
+    // Change first issue status
+    const firstRow = rows.first();
+    const statusSelect = firstRow.locator('select');
+    const currentStatus = await statusSelect.inputValue();
+
+    // Change to different status
+    const newStatus = currentStatus === 'open' ? 'resolved' : 'open';
+    await statusSelect.selectOption(newStatus);
+
+    // Wait for state to update
+    await page.waitForTimeout(500);
+
+    // Check if stats updated (this depends on the app's implementation)
+    const updatedOpenText = await page.locator('.stat').filter({ hasText: 'Open:' }).textContent();
+    expect(updatedOpenText).toBeTruthy();
   });
 
   test('resizable splitter maintains functionality', async ({ page }) => {
@@ -104,20 +104,19 @@ test.describe('Integration Tests', () => {
     // 1. App loads successfully
     await expect(page.locator('.pdf-review-app')).toBeVisible();
     await expect(page.locator('h1')).toContainText('PDF Review Tool');
-    
+
     // 2. Switch to rectangle mode
     await page.locator('.mode-button').filter({ hasText: 'Rectangle' }).click();
     await expect(page.locator('.mode-button.active').filter({ hasText: 'Rectangle' })).toBeVisible();
-    
-    // 3. Wait for issues to load and select one
-    await page.waitForTimeout(1500);
-    const issueRows = page.locator('tbody tr');
-    
-    if (await issueRows.count() > 0) {
+
+    // 3. Create and select an issue
+    const created = await createTestIssue(page, 'Test issue for workflow');
+    if (created) {
+      const issueRows = page.locator('tbody tr');
       const firstRow = issueRows.first();
       await firstRow.click();
       await expect(firstRow).toHaveClass(/selected/);
-      
+
       // 4. Change issue status
       const statusSelect = firstRow.locator('select');
       const currentStatus = await statusSelect.inputValue();
@@ -125,11 +124,11 @@ test.describe('Integration Tests', () => {
       await statusSelect.selectOption(newStatus);
       await expect(statusSelect).toHaveValue(newStatus);
     }
-    
+
     // 5. Switch back to highlight mode
     await page.locator('.mode-button').filter({ hasText: 'Highlight' }).click();
     await expect(page.locator('.mode-button.active').filter({ hasText: 'Highlight' })).toBeVisible();
-    
+
     // 6. Verify app is still functional
     await expect(page.locator('.pdf-review-app')).toBeVisible();
     await expect(page.locator('.issues-table')).toBeVisible();
