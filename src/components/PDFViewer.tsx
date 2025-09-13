@@ -326,8 +326,8 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
                             <span className="comment-emoji">{highlight.comment.emoji}</span>
                           )}
                           <div className="comment-text">{highlight.comment?.text}</div>
-                          {highlight.content.text && (
-                            <div className="highlight-text">"{highlight.content.text}"</div>
+                          {highlight.content?.text && (
+                            <div className="highlight-text">"{highlight.content?.text}"</div>
                           )}
                           <button
                             className="delete-highlight"

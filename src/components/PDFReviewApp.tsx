@@ -4,16 +4,16 @@ import PDFViewer from './PDFViewer';
 import ResizableSplitter from './ResizableSplitter';
 import type { Issue, IHighlight, RectangleWithComment } from '../types/index';
 import { InteractionMode } from '../types/index';
-import { mockIssues, mockHighlights } from '../data/mockData';
+import { mockHighlights } from '../data/mockData';
 import { v4 as uuidv4 } from 'uuid';
 import '../styles/PDFReview.css';
 
 const PDFReviewApp: React.FC = () => {
-  const [issues, setIssues] = useState<Issue[]>(mockIssues);
+  const [issues, setIssues] = useState<Issue[]>([]);
   const [highlights, setHighlights] = useState<IHighlight[]>(mockHighlights);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [rectangles, setRectangles] = useState<RectangleWithComment[]>([]);
-  const [pdfUrl, setPdfUrl] = useState<string>('/sample.pdf');
+  const [pdfUrl] = useState<string>('/sample.pdf');
   const [currentMode, setCurrentMode] = useState<InteractionMode>(InteractionMode.HIGHLIGHT);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdfViewerRef = useRef<any>(null);
@@ -94,18 +94,6 @@ const PDFReviewApp: React.FC = () => {
     });
   }, []);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      const url = URL.createObjectURL(file);
-      setPdfUrl(url);
-      setHighlights([]);
-      setIssues(mockIssues.map(issue => ({ ...issue, highlight: undefined })));
-      setSelectedIssue(null);
-      setRectangles([]);
-    }
-  }, []);
-
   const handleUpdateIssueStatus = useCallback((issueId: string, status: Issue['status']) => {
     setIssues(prev =>
       prev.map(issue =>
@@ -144,16 +132,6 @@ const PDFReviewApp: React.FC = () => {
         </div>
 
         <div className="header-controls">
-          <label htmlFor="pdf-upload" className="upload-button">
-            Upload PDF
-            <input
-              id="pdf-upload"
-              type="file"
-              accept="application/pdf"
-              onChange={handleFileUpload}
-              style={{ display: 'none' }}
-            />
-          </label>
           <div className="stats">
             <span className="stat">
               Open: {issues.filter(i => i.status === 'open').length}

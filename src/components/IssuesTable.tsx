@@ -44,15 +44,6 @@ const IssuesTable: React.FC<IssuesTableProps> = ({
     <div className="issues-table-container">
       <div className="issues-table-header">
         <h2>Issues ({issues.length})</h2>
-        <div className="filter-controls">
-          <select className="filter-select">
-            <option value="all">All Categories</option>
-            <option value="financial">Financial Review</option>
-            <option value="compliance">Compliance</option>
-            <option value="audit">Audit Findings</option>
-            <option value="disclosure">Disclosure</option>
-          </select>
-        </div>
       </div>
       
       <div className="issues-table-wrapper">
