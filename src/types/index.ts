@@ -44,6 +44,7 @@ export interface Issue {
   page: number;
   description: string;
   highlight?: IHighlight;
+  rectangle?: RectangleWithComment;
   status: 'open' | 'resolved' | 'in-review';
   priority: 'low' | 'medium' | 'high';
   category: string;

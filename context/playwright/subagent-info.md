@@ -7,15 +7,18 @@ This project uses **Playwright** for end-to-end testing. Tests run only on Chrom
 
 #### Test Structure
 - `tests/app.spec.ts` - Main application functionality tests
+- `tests/highlight-functionality.spec.ts` - Text highlighting feature tests (16 test cases)
+- `tests/rectangle-functionality.spec.ts` - Rectangle drawing feature tests (12 test cases)
 - `tests/issues-table.spec.ts` - Issues table component tests
-- `tests/pdf-viewer.spec.ts` - PDF viewer component tests  
+- `tests/pdf-viewer.spec.ts` - PDF viewer component tests
 - `tests/integration.spec.ts` - Integration and workflow tests
+- `tests/test-helpers.ts` - Shared test utilities (createTestIssue, createTestRectangle, etc.)
 
 #### Test Verification with Playwright MCP
 Always use the Playwright MCP server tools for interactive testing and debugging. This provides better visual verification than running tests directly:
 
 **Complete MCP Playwright Toolkit:**
-1. `mcp__playwright__browser_navigate` - Navigate to http://localhost:5175 (dev server port)
+1. `mcp__playwright__browser_navigate` - Navigate to http://localhost:5173 (dev server port)
 2. `mcp__playwright__browser_snapshot` - Capture accessibility snapshots to understand page structure and find selectors
 3. `mcp__playwright__browser_take_screenshot` - Take visual screenshots, save with descriptive filenames
 4. `mcp__playwright__browser_click` - Test user interactions (buttons, links, form elements, mode switches)
@@ -27,7 +30,7 @@ Always use the Playwright MCP server tools for interactive testing and debugging
 10. `mcp__playwright__browser_hover` - Test hover states and tooltip functionality
 
 **Enhanced Testing Workflow:**
-1. **Initialize**: Use `browser_navigate` to load the app at http://localhost:5175
+1. **Initialize**: Use `browser_navigate` to load the app at http://localhost:5173
 2. **Inspect**: Use `browser_snapshot` to see current page state and identify correct selectors
 3. **Document**: Use `browser_take_screenshot` with descriptive filenames like `highlight-modal-visible.png`
 4. **Interact**: Use `browser_click` to test mode switches, issue navigation, and UI interactions
@@ -40,11 +43,13 @@ Always use the Playwright MCP server tools for interactive testing and debugging
 **Critical Selectors for Testing:**
 - **Mode Controls**: `.mode-button` (with `.active` class when selected)
 - **PDF Interface**: `.pdf-content`, `.pdf-viewer-container`, `.pdf-viewer-toolbar`
-- **Comment System**: `.comment-popup`, `.comment-textarea`, `.emoji-button`
+- **Comment System**: `.comment-popup`, `.comment-textarea`, `.emoji-button`, `.priority-button`
 - **Highlights**: `.Highlight`, `.AreaHighlight`, temporary highlights with `data-highlight-id="temp-highlight"`
-- **Issues Management**: `.issues-table`, `.issues-table tbody tr`, `.status-select`
+- **Rectangle Drawing**: `.drag-rectangle-overlay.enabled`, `.drawing-rectangle`, `.persistent-rectangle`, `.coordinates-tooltip`
+- **Issues Management**: `.issues-table`, `.issues-table tbody tr`, `.status-select`, `.priority-select`
 - **Layout**: `.resizable-left-panel`, `.resizable-right-panel`, `.pdf-review-content`
 - **Statistics**: `.stats .stat`, `.stat` elements showing counts
+- **Buttons**: `.confirm-button`, `.cancel-button` for modals
 
 **Real-World Testing Examples:**
 ```javascript
@@ -53,10 +58,24 @@ await page.locator('.mode-button').filter({ hasText: 'Highlight' }).click();
 await page.locator('.pdf-content').dblclick(); // Select text
 await expect(page.locator('.comment-popup')).toBeVisible();
 
+// Test rectangle functionality
+await page.locator('.mode-button').filter({ hasText: 'Rectangle' }).click();
+const dragOverlay = page.locator('.drag-rectangle-overlay.enabled');
+await dragOverlay.hover({ position: { x: 100, y: 100 } });
+await page.mouse.down();
+await page.mouse.move(250, 200);
+await page.mouse.up();
+await expect(page.locator('.comment-popup')).toBeVisible();
+
 // Test comment modal interactions
-await page.locator('.emoji-button').first().click();
+await page.locator('.priority-button').filter({ hasText: 'High' }).click();
 await page.fill('.comment-textarea', 'Test comment');
 await page.locator('.confirm-button').click();
+
+// Using test helpers
+import { createTestRectangle, createTestIssue } from './test-helpers';
+await createTestRectangle(page, 'Test rectangle', 100, 100, 200, 200, 'high');
+await createTestIssue(page, 'Test highlight issue');
 ```
 
 **Browser Instance Management:**

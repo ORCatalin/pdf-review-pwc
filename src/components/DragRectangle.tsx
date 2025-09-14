@@ -12,11 +12,11 @@ const DragRectangle: React.FC<DragRectangleProps> = ({
   pageNumber,
   isEnabled,
   onRequestComment,
+  onRectangleDrawn,
 }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
   const [endPoint, setEndPoint] = useState({ x: 0, y: 0 });
-  const [rectangles] = useState<RectangleWithComment[]>([]);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -120,24 +120,6 @@ const DragRectangle: React.FC<DragRectangleProps> = ({
         </div>
       )}
       
-      {rectangles.map((rect) => (
-        <div
-          key={rect.id}
-          className="drawn-rectangle"
-          style={{
-            left: `${rect.startX}px`,
-            top: `${rect.startY}px`,
-            width: `${rect.endX - rect.startX}px`,
-            height: `${rect.endY - rect.startY}px`,
-          }}
-        >
-          <div className="rectangle-info">
-            <span className="rectangle-coords">
-              {`(${Math.round(rect.startX)}, ${Math.round(rect.startY)})`}
-            </span>
-          </div>
-        </div>
-      ))}
     </div>
   );
 };

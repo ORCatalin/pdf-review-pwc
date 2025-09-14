@@ -20,7 +20,7 @@ const PDFReviewApp: React.FC = () => {
 
   const handleIssueClick = useCallback((issue: Issue) => {
     setSelectedIssue(issue);
-    
+
     if (issue.highlight && pdfViewerRef.current) {
       pdfViewerRef.current.scrollToHighlight(issue.highlight);
     } else if (pdfViewerRef.current) {
@@ -78,6 +78,20 @@ const PDFReviewApp: React.FC = () => {
 
   const handleRectangleDrawn = useCallback((rectangle: RectangleWithComment) => {
     setRectangles(prev => [...prev, rectangle]);
+
+    // Create an issue from the rectangle similar to how highlights work
+    const newIssue: Issue = {
+      id: `RECT-${String(issues.length + 1).padStart(3, '0')}`,
+      page: rectangle.pageNumber,
+      description: rectangle.comment?.text || 'Rectangle annotation added',
+      rectangle: rectangle,
+      status: 'open',
+      priority: 'medium',
+      category: 'Rectangle Annotation',
+    };
+
+    setIssues(prev => [...prev, newIssue]);
+
     console.log('Rectangle coordinates:', {
       startX: rectangle.startX,
       startY: rectangle.startY,
@@ -86,7 +100,7 @@ const PDFReviewApp: React.FC = () => {
       pageNumber: rectangle.pageNumber,
       comment: rectangle.comment,
     });
-  }, []);
+  }, [issues.length]);
 
   const handleUpdateIssueStatus = useCallback((issueId: string, status: Issue['status']) => {
     setIssues(prev =>

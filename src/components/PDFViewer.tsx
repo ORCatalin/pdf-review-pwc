@@ -237,7 +237,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
 
 
   render() {
-    const { pdfUrl, highlights, selectedHighlight, onRectangleDrawn, currentMode } = this.props;
+    const { pdfUrl, highlights, selectedHighlight, onRectangleDrawn, rectangles, currentMode } = this.props;
     const { showCommentPopup, commentPosition, currentPageNumber, temporaryHighlight } = this.state;
 
     const isRectangleMode = currentMode === InteractionMode.RECTANGLE;
@@ -361,6 +361,43 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
               onRequestComment={this.handleRequestRectangleComment}
             />
           )}
+
+          {/* Display all drawn rectangles */}
+          {this.props.rectangles.map((rect) => (
+            <div
+              key={rect.id}
+              className="persistent-rectangle"
+              style={{
+                position: 'absolute',
+                left: `${rect.startX}px`,
+                top: `${rect.startY}px`,
+                width: `${rect.endX - rect.startX}px`,
+                height: `${rect.endY - rect.startY}px`,
+                border: '2px solid #ff6b6b',
+                backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                pointerEvents: 'none',
+                zIndex: 10,
+              }}
+            >
+              <div
+                className="rectangle-info"
+                style={{
+                  position: 'absolute',
+                  top: '-25px',
+                  left: '0px',
+                  fontSize: '12px',
+                  color: '#ff6b6b',
+                  backgroundColor: 'white',
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  border: '1px solid #ff6b6b',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {rect.comment?.text || 'Rectangle'} ({Math.round(rect.startX)}, {Math.round(rect.startY)})
+              </div>
+            </div>
+          ))}
         </div>
 
         {showCommentPopup && (

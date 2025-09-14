@@ -112,3 +112,64 @@ export const hasIssues = async (page: Page) => {
   const count = await rows.count();
   return count > 0;
 };
+
+/**
+ * Helper function to create a test rectangle via UI interaction
+ */
+export const createTestRectangle = async (
+  page: Page,
+  comment = 'Test rectangle comment',
+  startX = 150,
+  startY = 150,
+  endX = 300,
+  endY = 250,
+  priority: 'low' | 'medium' | 'high' = 'medium'
+) => {
+  // Wait for PDF to load completely
+  await page.waitForTimeout(3000);
+
+  // Switch to rectangle mode
+  const rectangleButton = page.locator('.mode-button').filter({ hasText: 'Rectangle' });
+  await rectangleButton.click();
+  await expect(rectangleButton).toHaveClass(/active/);
+
+  // Wait for mode to be set
+  await page.waitForTimeout(500);
+
+  // Ensure drag overlay is available
+  const dragOverlay = page.locator('.drag-rectangle-overlay.enabled');
+  await expect(dragOverlay).toBeVisible();
+
+  // Draw the rectangle
+  await dragOverlay.hover({ position: { x: startX, y: startY } });
+  await page.mouse.down();
+  await page.mouse.move(endX, endY);
+  await page.mouse.up();
+
+  // Wait for comment popup
+  await page.waitForTimeout(1000);
+
+  const commentPopup = page.locator('.comment-popup');
+  if (await commentPopup.isVisible({ timeout: 5000 })) {
+    // Set priority if not medium
+    if (priority !== 'medium') {
+      const priorityButton = page.locator('.priority-button').filter({ hasText: priority.charAt(0).toUpperCase() + priority.slice(1) });
+      await priorityButton.click();
+      await expect(priorityButton).toHaveClass(/selected/);
+    }
+
+    // Fill in the comment
+    const commentTextarea = commentPopup.locator('.comment-textarea');
+    await commentTextarea.fill(comment);
+
+    // Click confirm to create the rectangle
+    const confirmButton = commentPopup.locator('.confirm-button');
+    await confirmButton.click();
+
+    // Wait for the rectangle to be created and appear
+    await page.waitForTimeout(1500);
+    return true;
+  }
+
+  return false;
+};
