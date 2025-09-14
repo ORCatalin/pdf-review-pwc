@@ -19,7 +19,9 @@
       "Bash(npm run build:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Read(//d/**)"
+      "Read(//d/**)",
+      "Bash(npm run dev:*)",
+      "mcp__playwright__browser_console_messages"
     ],
     "deny": [],
     "ask": []

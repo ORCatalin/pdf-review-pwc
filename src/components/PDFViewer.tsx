@@ -11,6 +11,7 @@ import { InteractionMode } from '../types/index';
 import CommentPopup from './CommentPopup';
 import DragRectangle from './DragRectangle';
 import { v4 as uuidv4 } from 'uuid';
+import { getPdfPageDimensions, scaleRectangleCoordinates, calculateModalPosition } from '../utils/rectangleUtils';
 
 import 'react-pdf-highlighter/dist/style.css';
 
@@ -46,6 +47,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private highlighterRef = createRef<any>();
   private containerRef = createRef<HTMLDivElement>();
+  private resizeObserver: ResizeObserver | null = null;
 
   state: PDFViewerState = {
     showCommentPopup: false,
@@ -198,34 +200,32 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
   };
 
   handleRequestRectangleComment = (rectangle: Omit<RectangleWithComment, 'id' | 'comment'>) => {
+    console.log('handleRequestRectangleComment called with:', rectangle);
     const container = this.containerRef.current;
-    const modalWidth = 300;
-    const modalHeight = 300;
-    
-    // Position modal to the right of the rectangle
-    let x = rectangle.endX + 20;
-    
-    // If modal would go off-screen to the right, position it to the left
-    if (container && x + modalWidth > container.offsetWidth) {
-      x = rectangle.startX - modalWidth - 20;
-    }
-    
-    // If still off-screen, center it horizontally
-    if (x < 0) {
-      x = Math.max(10, (rectangle.startX + rectangle.endX) / 2 - modalWidth / 2);
-    }
-    
-    // Position modal below the rectangle
-    let y = rectangle.endY + 10;
-    
-    // If modal would be too low, position it above
-    if (container && y + modalHeight > container.offsetHeight) {
-      y = Math.max(10, rectangle.startY - modalHeight - 10);
-    }
-    
+    if (!container) return;
+
+    // Find the page element to get viewport position
+    const pageElement = document.querySelector(`.page[data-page-number="${rectangle.pageNumber}"]`);
+    if (!pageElement) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const pageRect = pageElement.getBoundingClientRect();
+
+    // Get current PDF dimensions for scaling
+    const currentDimensions = getPdfPageDimensions(rectangle.pageNumber);
+    if (!currentDimensions) return;
+
+    // Use the unified modal positioning logic
+    const position = calculateModalPosition(
+      rectangle as RectangleWithComment, // Safe cast since we're not using comment field
+      containerRect,
+      pageRect,
+      currentDimensions
+    );
+
     this.setState({
       showCommentPopup: true,
-      commentPosition: { x, y },
+      commentPosition: position,
       pendingRectangle: rectangle,
       pendingHighlight: null,
     });
@@ -234,6 +234,162 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
   updateHighlight = (highlightId: string) => {
     console.log('Update highlight', highlightId);
   };
+
+  renderRectanglesOnPages = () => {
+    // Clean up existing rectangle elements
+    document.querySelectorAll('.page-rectangle-container').forEach(el => el.remove());
+
+    // Group rectangles by page
+    const rectanglesByPage = this.props.rectangles.reduce((acc, rect) => {
+      if (!acc[rect.pageNumber]) {
+        acc[rect.pageNumber] = [];
+      }
+      acc[rect.pageNumber].push(rect);
+      return acc;
+    }, {} as Record<number, RectangleWithComment[]>);
+
+    // Render rectangles on each page
+    Object.entries(rectanglesByPage).forEach(([pageNum, rects]) => {
+      const pageElement = document.querySelector(`.page[data-page-number="${pageNum}"]`);
+      if (!pageElement) return;
+
+      // Create container for rectangles on this page
+      const container = document.createElement('div');
+      container.className = 'page-rectangle-container';
+      container.style.position = 'absolute';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.width = '100%';
+      container.style.height = '100%';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '10';
+
+      // Get current PDF dimensions for this page
+      const currentDimensions = getPdfPageDimensions(parseInt(pageNum));
+      if (!currentDimensions) return;
+
+      rects.forEach(rect => {
+        // Calculate scaled coordinates based on current PDF size
+        const scaledCoords = scaleRectangleCoordinates(rect, currentDimensions);
+
+        const rectElement = document.createElement('div');
+        rectElement.className = 'persistent-rectangle';
+        rectElement.style.position = 'absolute';
+        rectElement.style.left = `${scaledCoords.startX}px`;
+        rectElement.style.top = `${scaledCoords.startY}px`;
+        rectElement.style.width = `${scaledCoords.endX - scaledCoords.startX}px`;
+        rectElement.style.height = `${scaledCoords.endY - scaledCoords.startY}px`;
+        rectElement.style.border = '2px solid #ff6b6b';
+        rectElement.style.backgroundColor = 'rgba(255, 107, 107, 0.1)';
+        rectElement.style.pointerEvents = 'all';
+        rectElement.style.cursor = 'pointer';
+
+        // Add click handler for editing rectangles
+        rectElement.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Show edit popup for this rectangle using unified modal positioning logic
+          const container = this.containerRef.current;
+          if (!container) return;
+
+          const currentPageElement = document.querySelector(`.page[data-page-number="${rect.pageNumber}"]`);
+          if (!currentPageElement) return;
+
+          const containerRect = container.getBoundingClientRect();
+          const pageRect = currentPageElement.getBoundingClientRect();
+
+          // Use the unified modal positioning logic
+          const position = calculateModalPosition(
+            rect,
+            containerRect,
+            pageRect,
+            currentDimensions
+          );
+
+          this.setState({
+            showCommentPopup: true,
+            commentPosition: position,
+            pendingRectangle: null,
+            pendingHighlight: null,
+          });
+        });
+
+        // Add info label
+        const infoLabel = document.createElement('div');
+        infoLabel.className = 'rectangle-info';
+        infoLabel.style.position = 'absolute';
+        infoLabel.style.top = '-25px';
+        infoLabel.style.left = '0px';
+        infoLabel.style.fontSize = '12px';
+        infoLabel.style.color = '#ff6b6b';
+        infoLabel.style.backgroundColor = 'white';
+        infoLabel.style.padding = '2px 6px';
+        infoLabel.style.borderRadius = '3px';
+        infoLabel.style.border = '1px solid #ff6b6b';
+        infoLabel.style.whiteSpace = 'nowrap';
+        infoLabel.textContent = `${rect.comment?.text || 'Rectangle'} (${Math.round(scaledCoords.startX)}, ${Math.round(scaledCoords.startY)})`;
+
+        rectElement.appendChild(infoLabel);
+        container.appendChild(rectElement);
+      });
+
+      pageElement.style.position = 'relative';
+      pageElement.appendChild(container);
+    });
+  };
+
+  // Debounced rectangle rendering to handle multiple rapid changes
+  private renderRectanglesDebounced = (() => {
+    let timeoutId: NodeJS.Timeout;
+    return () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => this.renderRectanglesOnPages(), 100);
+    };
+  })();
+
+  componentDidUpdate(prevProps: PDFViewerProps, prevState: PDFViewerState) {
+    // Re-render rectangles when they change
+    if (prevProps.rectangles !== this.props.rectangles) {
+      this.renderRectanglesDebounced();
+    }
+
+    // Re-render rectangles when mode changes (to handle visibility issues)
+    if (prevProps.currentMode !== this.props.currentMode) {
+      this.renderRectanglesDebounced();
+    }
+
+    // Re-render rectangles when comment popup state changes (to handle mode switching)
+    if (prevState.showCommentPopup !== this.state.showCommentPopup) {
+      this.renderRectanglesDebounced();
+    }
+  }
+
+  componentDidMount() {
+    // Initial render of rectangles after PDF loads
+    setTimeout(() => this.renderRectanglesOnPages(), 1000);
+
+    // Also render after a longer delay to handle slow PDF loading
+    setTimeout(() => this.renderRectanglesOnPages(), 2000);
+
+    // Set up ResizeObserver to handle container size changes (like splitter resizing)
+    if (this.containerRef.current) {
+      this.resizeObserver = new ResizeObserver((entries) => {
+        // Debounce the rectangle re-rendering for performance
+        this.renderRectanglesDebounced();
+      });
+
+      this.resizeObserver.observe(this.containerRef.current);
+    }
+  }
+
+  componentWillUnmount() {
+    // Clean up ResizeObserver
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+  }
 
 
   render() {
@@ -277,6 +433,9 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
                   if (currentPage !== this.state.currentPageNumber) {
                     this.setState({ currentPageNumber: currentPage });
                   }
+
+                  // Render rectangles on their respective pages (debounced for performance)
+                  this.renderRectanglesDebounced();
                 }}
                 highlightTransform={(
                   highlight,
@@ -353,51 +512,16 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
             )}
           </PdfLoader>
 
-          {isRectangleMode && (
+          {isRectangleMode && !showCommentPopup && (
             <DragRectangle
               pageNumber={currentPageNumber}
               onRectangleDrawn={onRectangleDrawn}
-              isEnabled={isRectangleMode}
+              isEnabled={isRectangleMode && !showCommentPopup}
               onRequestComment={this.handleRequestRectangleComment}
             />
           )}
 
-          {/* Display all drawn rectangles */}
-          {this.props.rectangles.map((rect) => (
-            <div
-              key={rect.id}
-              className="persistent-rectangle"
-              style={{
-                position: 'absolute',
-                left: `${rect.startX}px`,
-                top: `${rect.startY}px`,
-                width: `${rect.endX - rect.startX}px`,
-                height: `${rect.endY - rect.startY}px`,
-                border: '2px solid #ff6b6b',
-                backgroundColor: 'rgba(255, 107, 107, 0.1)',
-                pointerEvents: 'none',
-                zIndex: 10,
-              }}
-            >
-              <div
-                className="rectangle-info"
-                style={{
-                  position: 'absolute',
-                  top: '-25px',
-                  left: '0px',
-                  fontSize: '12px',
-                  color: '#ff6b6b',
-                  backgroundColor: 'white',
-                  padding: '2px 6px',
-                  borderRadius: '3px',
-                  border: '1px solid #ff6b6b',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {rect.comment?.text || 'Rectangle'} ({Math.round(rect.startX)}, {Math.round(rect.startY)})
-              </div>
-            </div>
-          ))}
+          {/* Display all drawn rectangles - removed from here, will be rendered per page */}
         </div>
 
         {showCommentPopup && (

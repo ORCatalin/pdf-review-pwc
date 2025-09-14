@@ -44,20 +44,33 @@ The project has the following Playwright test files in the `tests/` directory:
 
 ## Core Workflow
 
-### Phase 1: Context Gathering (Simplified)
+### Phase 1: Context Gathering & Smart Test Selection
 1. **Load MCP Playwright Context**
    - Read `context/playwright/subagent-info.md` for MCP tools guidance and visual testing approach
    - This file contains critical information about using MCP Playwright tools for verification
 
-2. **Quick Status Check**
+2. **Analyze Code Changes**
    - Execute `git status` to see modified files
    - Run `git diff HEAD` to see uncommitted changes if any
-   - Note which components were modified (PDFViewer, DragRectangle, IssuesTable, etc.)
+   - Map modified components to relevant test files using the component-to-test mapping below
 
-3. **Skip File Searching**
-   - No need to search for test files - they're listed above
-   - No need to read configuration - it's provided above
-   - Focus on understanding what changed and running tests
+3. **Component-to-Test Mapping**
+   - `PDFViewer.tsx` → `pdf-viewer.spec.ts` + `integration.spec.ts`
+   - `DragRectangle.tsx` → `rectangle-functionality.spec.ts` + `pdf-viewer.spec.ts`
+   - `CommentPopup.tsx` → `highlight-functionality.spec.ts` + `rectangle-functionality.spec.ts`
+   - `IssuesTable.tsx` → `issues-table.spec.ts` + `integration.spec.ts`
+   - `PDFReviewApp.tsx` → `app.spec.ts` + `integration.spec.ts`
+   - `ResizableSplitter.tsx` → `app.spec.ts` + `integration.spec.ts`
+   - `styles/*.css` → All test files (global impact)
+   - `types/*.ts` → All test files (global impact)
+   - Config files (`*.config.ts`, `package.json`) → All test files
+
+4. **Smart Test Selection Logic**
+   - **Single component change**: Run component-specific tests + integration tests
+   - **Multiple related components**: Run affected test suites
+   - **Global changes (styles, types, config)**: Run complete test suite
+   - **First-time run or uncertain scope**: Run complete test suite
+   - **Cross-component changes (3+ components)**: Run complete test suite
 
 ### Phase 2: Test Execution
 1. **Pre-execution Setup**
@@ -65,8 +78,14 @@ The project has the following Playwright test files in the `tests/` directory:
    - Verify Playwright is properly configured
    - Clear any test artifacts from previous runs
 
-2. **Run Test Suite**
-   - Run the complete suite with single worker: `npx playwright test --workers=1 --reporter=html`
+2. **Smart Test Execution**
+   - **Determine test scope** based on Phase 1 analysis:
+     - **Targeted tests**: `npx playwright test tests/[specific-files].spec.ts --workers=1 --reporter=html`
+     - **Complete suite**: `npx playwright test --workers=1 --reporter=html`
+   - **Execution examples**:
+     - Single component (PDFViewer.tsx): `npx playwright test tests/pdf-viewer.spec.ts tests/integration.spec.ts --workers=1 --reporter=html`
+     - Rectangle functionality (DragRectangle.tsx): `npx playwright test tests/rectangle-functionality.spec.ts tests/pdf-viewer.spec.ts --workers=1 --reporter=html`
+     - Global changes: `npx playwright test --workers=1 --reporter=html`
    - Use single worker mode to avoid multiple browsers and allow visual observation
    - Capture and parse test output, including:
      - Pass/fail status for each test
@@ -95,13 +114,14 @@ The project has the following Playwright test files in the `tests/` directory:
    ✅ All tests passing successfully
 
    Test Execution Details:
+   - Test scope: [Targeted/Complete] suite based on [change description]
    - Total tests run: [number]
    - Execution time: [duration]
    - Screenshots captured: [count] (saved in test-results/)
    - HTML report: opened in browser for detailed review
 
    Test Coverage Analysis:
-   - [Brief summary of coverage]
+   - [Brief summary of coverage for changed components]
    - [Key gaps if any]
 
    HTML report opened for detailed visual review of all test results and screenshots.
@@ -116,6 +136,7 @@ The project has the following Playwright test files in the `tests/` directory:
    ❌ Test failures detected
 
    Test Execution Details:
+   - Test scope: [Targeted/Complete] suite based on [change description]
    - Total tests run: [number]
    - Failed tests: [number]
    - Execution time: [duration]

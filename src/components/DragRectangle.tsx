@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { RectangleWithComment } from '../types/index';
+import { getPdfPageDimensions, createRectangleWithDimensions, isValidRectangleSize } from '../utils/rectangleUtils';
 
 interface DragRectangleProps {
   pageNumber: number;
@@ -21,7 +22,7 @@ const DragRectangle: React.FC<DragRectangleProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!isEnabled) return;
-    
+
     const rect = overlayRef.current?.getBoundingClientRect();
     if (!rect) return;
 
@@ -45,22 +46,84 @@ const DragRectangle: React.FC<DragRectangleProps> = ({
     setEndPoint({ x, y });
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: React.MouseEvent) => {
     if (!isDrawing || !isEnabled) return;
 
+    const overlayRect = overlayRef.current?.getBoundingClientRect();
+    if (!overlayRect) {
+      setIsDrawing(false);
+      return;
+    }
+
+    // Get current mouse position for accurate endPoint
+    const currentX = e.clientX - overlayRect.left;
+    const currentY = e.clientY - overlayRect.top;
+
+    // Find which page the rectangle is actually on by checking overlap
+    const rectLeft = Math.min(startPoint.x, currentX);
+    const rectTop = Math.min(startPoint.y, currentY);
+    const rectRight = Math.max(startPoint.x, currentX);
+    const rectBottom = Math.max(startPoint.y, currentY);
+    const rectCenterX = overlayRect.left + (rectLeft + rectRight) / 2;
+    const rectCenterY = overlayRect.top + (rectTop + rectBottom) / 2;
+
+    // Find the page that contains the center of the rectangle
+    let targetPageNumber = pageNumber;
+    let targetPageElement = null;
+
+    const pages = document.querySelectorAll('.page[data-page-number]');
+    for (const page of pages) {
+      const pageRect = page.getBoundingClientRect();
+      if (rectCenterX >= pageRect.left && rectCenterX <= pageRect.right &&
+          rectCenterY >= pageRect.top && rectCenterY <= pageRect.bottom) {
+        targetPageNumber = parseInt(page.getAttribute('data-page-number') || '1');
+        targetPageElement = page;
+        break;
+      }
+    }
+
+    if (!targetPageElement) {
+      // Fallback to the original behavior if page detection fails
+      targetPageElement = document.querySelector(`.page[data-page-number="${pageNumber}"]`);
+      targetPageNumber = pageNumber;
+
+      if (!targetPageElement) {
+        setIsDrawing(false);
+        return;
+      }
+    }
+
+    const pageRect = targetPageElement.getBoundingClientRect();
+    const pageOffsetX = pageRect.left - overlayRect.left;
+    const pageOffsetY = pageRect.top - overlayRect.top;
+
+    // Get current PDF dimensions for scaling
+    const pdfDimensions = getPdfPageDimensions(targetPageNumber);
+    if (!pdfDimensions) {
+      console.log('Could not get PDF dimensions for page', targetPageNumber);
+      setIsDrawing(false);
+      return;
+    }
+
     const rectangleData = {
-      startX: Math.min(startPoint.x, endPoint.x),
-      startY: Math.min(startPoint.y, endPoint.y),
-      endX: Math.max(startPoint.x, endPoint.x),
-      endY: Math.max(startPoint.y, endPoint.y),
-      pageNumber,
+      startX: Math.min(startPoint.x, currentX) - pageOffsetX,
+      startY: Math.min(startPoint.y, currentY) - pageOffsetY,
+      endX: Math.max(startPoint.x, currentX) - pageOffsetX,
+      endY: Math.max(startPoint.y, currentY) - pageOffsetY,
+      pageNumber: targetPageNumber,
     };
 
     // Only create rectangle if it's large enough
-    if (Math.abs(rectangleData.endX - rectangleData.startX) > 5 && 
-        Math.abs(rectangleData.endY - rectangleData.startY) > 5) {
-      // Request comment for the rectangle
-      onRequestComment(rectangleData);
+    if (isValidRectangleSize(rectangleData)) {
+      // Create rectangle with PDF dimensions captured
+      const rectangleWithDimensions = createRectangleWithDimensions(rectangleData, pdfDimensions);
+      console.log('Requesting comment for rectangle:', rectangleWithDimensions);
+      onRequestComment(rectangleWithDimensions);
+    } else {
+      // Debug log for small rectangles
+      const width = Math.abs(rectangleData.endX - rectangleData.startX);
+      const height = Math.abs(rectangleData.endY - rectangleData.startY);
+      console.log('Rectangle too small:', { width, height, rectangleData });
     }
 
     setIsDrawing(false);
@@ -103,6 +166,9 @@ const DragRectangle: React.FC<DragRectangleProps> = ({
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      style={{
+        display: isEnabled ? 'block' : 'none'
+      }}
     >
       {currentRect && (
         <div
@@ -119,7 +185,7 @@ const DragRectangle: React.FC<DragRectangleProps> = ({
           </div>
         </div>
       )}
-      
+
     </div>
   );
 };

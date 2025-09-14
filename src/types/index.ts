@@ -89,4 +89,6 @@ export type InteractionMode = typeof InteractionMode[keyof typeof InteractionMod
 
 export interface RectangleWithComment extends Rectangle {
   comment?: Comment;
+  originalPdfWidth?: number;
+  originalPdfHeight?: number;
 }
