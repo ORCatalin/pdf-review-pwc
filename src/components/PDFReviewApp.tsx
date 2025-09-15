@@ -8,12 +8,14 @@ import { mockHighlights } from '../data/mockData';
 import { v4 as uuidv4 } from 'uuid';
 import '../styles/PDFReview.css';
 
+const PRIMARY_PDF_URL = './sample.pdf';
+
 const PDFReviewApp: React.FC = () => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [highlights, setHighlights] = useState<IHighlight[]>(mockHighlights);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [rectangles, setRectangles] = useState<RectangleWithComment[]>([]);
-  const [pdfUrl] = useState<string>('/sample.pdf');
+  const [pdfUrl] = useState<string>(PRIMARY_PDF_URL);
   const [currentMode, setCurrentMode] = useState<InteractionMode>(InteractionMode.HIGHLIGHT);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdfViewerRef = useRef<any>(null);
