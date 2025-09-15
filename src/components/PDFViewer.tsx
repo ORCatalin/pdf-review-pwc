@@ -159,7 +159,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
         id: uuidv4(),
         position: pendingHighlight.position,
         content: pendingHighlight.content,
-        comment: { text: comment.text, emoji: comment.emoji },
+        comment: { text: comment.text, emoji: comment.emoji || '📝' },
         timestamp: Date.now(),
       };
 
@@ -170,7 +170,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
       const newRectangle: RectangleWithComment = {
         id: uuidv4(),
         ...pendingRectangle,
-        comment: { text: comment.text, emoji: comment.emoji },
+        comment: { text: comment.text, emoji: comment.emoji || '📝' },
       };
 
       this.props.onRectangleDrawn(newRectangle);
@@ -334,14 +334,14 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
         container.appendChild(rectElement);
       });
 
-      pageElement.style.position = 'relative';
+      (pageElement as HTMLElement).style.position = 'relative';
       pageElement.appendChild(container);
     });
   };
 
   // Debounced rectangle rendering to handle multiple rapid changes
   private renderRectanglesDebounced = (() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: number;
     return () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => this.renderRectanglesOnPages(), 100);
@@ -374,7 +374,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
 
     // Set up ResizeObserver to handle container size changes (like splitter resizing)
     if (this.containerRef.current) {
-      this.resizeObserver = new ResizeObserver((entries) => {
+      this.resizeObserver = new ResizeObserver(() => {
         // Debounce the rectangle re-rendering for performance
         this.renderRectanglesDebounced();
       });
@@ -393,7 +393,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
 
 
   render() {
-    const { pdfUrl, highlights, selectedHighlight, onRectangleDrawn, rectangles, currentMode } = this.props;
+    const { pdfUrl, highlights, selectedHighlight, onRectangleDrawn, currentMode } = this.props;
     const { showCommentPopup, commentPosition, currentPageNumber, temporaryHighlight } = this.state;
 
     const isRectangleMode = currentMode === InteractionMode.RECTANGLE;
@@ -506,7 +506,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
                 }}
                 highlights={allHighlights.map(h => ({
                   ...h,
-                  comment: h.comment || { text: '', emoji: '' }
+                  comment: h.comment ? { ...h.comment, emoji: h.comment.emoji || '📝' } : { text: '', emoji: '📝' }
                 }))}
               />
             )}

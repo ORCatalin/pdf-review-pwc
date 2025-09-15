@@ -13,7 +13,7 @@ const DragRectangle: React.FC<DragRectangleProps> = ({
   pageNumber,
   isEnabled,
   onRequestComment,
-  onRectangleDrawn,
+  // onRectangleDrawn, // Currently unused but kept for future use
 }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState({ x: 0, y: 0 });
