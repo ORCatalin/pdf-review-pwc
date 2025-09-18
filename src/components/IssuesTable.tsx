@@ -6,7 +6,6 @@ interface IssuesTableProps {
   selectedIssue: Issue | null;
   onIssueClick: (issue: Issue) => void;
   onUpdateStatus: (issueId: string, status: Issue['status']) => void;
-  onUpdatePriority: (issueId: string, priority: Issue['priority']) => void;
 }
 
 const IssuesTable: React.FC<IssuesTableProps> = ({
@@ -14,17 +13,14 @@ const IssuesTable: React.FC<IssuesTableProps> = ({
   selectedIssue,
   onIssueClick,
   onUpdateStatus,
-  onUpdatePriority,
 }) => {
 
   const getStatusBadgeClass = (status: Issue['status']) => {
     switch (status) {
-      case 'open':
-        return 'status-open';
-      case 'in-review':
-        return 'status-in-review';
-      case 'resolved':
-        return 'status-resolved';
+      case 'approved':
+        return 'status-approved';
+      case 'not-approved':
+        return 'status-not-approved';
       default:
         return '';
     }
@@ -44,7 +40,6 @@ const IssuesTable: React.FC<IssuesTableProps> = ({
               <th style={{ width: '50px' }}>Page</th>
               <th>Description</th>
               <th style={{ width: '100px' }}>Category</th>
-              <th style={{ width: '80px' }}>Priority</th>
               <th style={{ width: '100px' }}>Status</th>
               <th style={{ width: '80px' }}>Actions</th>
             </tr>
@@ -61,30 +56,10 @@ const IssuesTable: React.FC<IssuesTableProps> = ({
                 <td className="issue-description">
                   <div className="description-text">
                     {issue.description}
-                    {issue.highlight && (
-                      <span className="has-highlight" title="Has highlighted text">
-                        📌
-                      </span>
-                    )}
                   </div>
                 </td>
                 <td className="issue-category">
                   <span className="category-badge">{issue.category}</span>
-                </td>
-                <td className="issue-priority">
-                  <select
-                    className={`priority-select priority-${issue.priority}`}
-                    value={issue.priority}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      onUpdatePriority(issue.id, e.target.value as Issue['priority']);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
                 </td>
                 <td className="issue-status">
                   <select
@@ -96,9 +71,8 @@ const IssuesTable: React.FC<IssuesTableProps> = ({
                     }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <option value="open">Open</option>
-                    <option value="in-review">In Review</option>
-                    <option value="resolved">Resolved</option>
+                    <option value="not-approved">Not Approved</option>
+                    <option value="approved">Approved</option>
                   </select>
                 </td>
                 <td className="issue-actions">

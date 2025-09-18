@@ -30,7 +30,7 @@ const PDFReviewApp: React.FC = () => {
     }
   }, []);
 
-  const handleAddHighlight = useCallback((highlight: IHighlight, priority: 'low' | 'medium' | 'high' = 'medium') => {
+  const handleAddHighlight = useCallback((highlight: IHighlight) => {
     const newHighlight = {
       ...highlight,
       id: uuidv4(),
@@ -44,8 +44,7 @@ const PDFReviewApp: React.FC = () => {
       page: highlight.position.pageNumber,
       description: highlight.comment?.text || 'New highlight added',
       highlight: newHighlight,
-      status: 'open',
-      priority,
+      status: 'not-approved',
       category: 'User Review',
     };
 
@@ -87,8 +86,7 @@ const PDFReviewApp: React.FC = () => {
       page: rectangle.pageNumber,
       description: rectangle.comment?.text || 'Rectangle annotation added',
       rectangle: rectangle,
-      status: 'open',
-      priority: 'medium',
+      status: 'not-approved',
       category: 'Rectangle Annotation',
     };
 
@@ -112,13 +110,6 @@ const PDFReviewApp: React.FC = () => {
     );
   }, []);
 
-  const handleUpdateIssuePriority = useCallback((issueId: string, priority: Issue['priority']) => {
-    setIssues(prev =>
-      prev.map(issue =>
-        issue.id === issueId ? { ...issue, priority } : issue
-      )
-    );
-  }, []);
 
   return (
     <div className="pdf-review-app">
@@ -131,34 +122,31 @@ const PDFReviewApp: React.FC = () => {
             onClick={() => setCurrentMode(InteractionMode.HIGHLIGHT)}
             title="Highlight Text Mode"
           >
-            🖍️ Highlight
+Highlight
           </button>
           <button
             className={`mode-button ${currentMode === InteractionMode.RECTANGLE ? 'active' : ''}`}
             onClick={() => setCurrentMode(InteractionMode.RECTANGLE)}
             title="Draw Rectangle Mode"
           >
-            📐 Rectangle
+Rectangle
           </button>
           <button
             className={`mode-button ${currentMode === InteractionMode.VIEW_ONLY ? 'active' : ''}`}
             onClick={() => setCurrentMode(InteractionMode.VIEW_ONLY)}
             title="View Only Mode"
           >
-            👁️ View Only
+View Only
           </button>
         </div>
 
         <div className="header-controls">
           <div className="stats">
             <span className="stat">
-              Open: {issues.filter(i => i.status === 'open').length}
+              Not Approved: {issues.filter(i => i.status === 'not-approved').length}
             </span>
             <span className="stat">
-              In Review: {issues.filter(i => i.status === 'in-review').length}
-            </span>
-            <span className="stat">
-              Resolved: {issues.filter(i => i.status === 'resolved').length}
+              Approved: {issues.filter(i => i.status === 'approved').length}
             </span>
           </div>
         </div>
@@ -172,7 +160,6 @@ const PDFReviewApp: React.FC = () => {
               selectedIssue={selectedIssue}
               onIssueClick={handleIssueClick}
               onUpdateStatus={handleUpdateIssueStatus}
-              onUpdatePriority={handleUpdateIssuePriority}
             />
           }
           rightPanel={

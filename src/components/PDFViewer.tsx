@@ -19,7 +19,7 @@ interface PDFViewerProps {
   pdfUrl: string;
   highlights: IHighlight[];
   selectedHighlight?: IHighlight;
-  onAddHighlight: (highlight: IHighlight, priority?: 'low' | 'medium' | 'high') => void;
+  onAddHighlight: (highlight: IHighlight) => void;
   onUpdateHighlight: (highlightId: string, update: Partial<IHighlight>) => void;
   onDeleteHighlight: (highlightId: string) => void;
   onRectangleDrawn: (rectangle: RectangleWithComment) => void;
@@ -151,7 +151,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
     };
   };
 
-  handleCommentConfirm = (comment: { text: string; emoji?: string; priority?: 'low' | 'medium' | 'high' }) => {
+  handleCommentConfirm = (comment: { text: string }) => {
     const { pendingHighlight, pendingRectangle } = this.state;
 
     if (pendingHighlight) {
@@ -163,7 +163,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
         timestamp: Date.now(),
       };
 
-      this.props.onAddHighlight(newHighlight, comment.priority);
+      this.props.onAddHighlight(newHighlight);
       pendingHighlight.hideTipAndSelection();
       pendingHighlight.transformSelection();
     } else if (pendingRectangle) {

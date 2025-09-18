@@ -123,7 +123,6 @@ export const createTestRectangle = async (
   startY = 150,
   endX = 300,
   endY = 250,
-  priority: 'low' | 'medium' | 'high' = 'medium'
 ) => {
   // Wait for PDF to load completely
   await page.waitForTimeout(3000);
@@ -151,12 +150,6 @@ export const createTestRectangle = async (
 
   const commentPopup = page.locator('.comment-popup');
   if (await commentPopup.isVisible({ timeout: 5000 })) {
-    // Set priority if not medium
-    if (priority !== 'medium') {
-      const priorityButton = page.locator('.priority-button').filter({ hasText: priority.charAt(0).toUpperCase() + priority.slice(1) });
-      await priorityButton.click();
-      await expect(priorityButton).toHaveClass(/selected/);
-    }
 
     // Fill in the comment
     const commentTextarea = commentPopup.locator('.comment-textarea');

@@ -28,7 +28,6 @@ export interface HighlightContent {
 
 export interface Comment {
   text: string;
-  emoji: string;
 }
 
 export interface IHighlight {
@@ -45,8 +44,7 @@ export interface Issue {
   description: string;
   highlight?: IHighlight;
   rectangle?: RectangleWithComment;
-  status: 'open' | 'resolved' | 'in-review';
-  priority: 'low' | 'medium' | 'high';
+  status: 'approved' | 'not-approved';
   category: string;
 }
 

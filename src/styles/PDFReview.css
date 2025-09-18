@@ -174,9 +174,6 @@
   gap: 0.5rem;
 }
 
-.has-highlight {
-  font-size: 0.9rem;
-}
 
 .category-badge {
   display: inline-block;
@@ -206,46 +203,16 @@
   cursor: pointer;
 }
 
-.status-select.status-open {
+.status-select.status-not-approved {
   border-color: #dc3545;
   color: #dc3545;
 }
 
-.status-select.status-in-review {
-  border-color: #ffc107;
-  color: #856404;
-}
-
-.status-select.status-resolved {
+.status-select.status-approved {
   border-color: #28a745;
   color: #28a745;
 }
 
-.priority-select {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  background: white;
-  cursor: pointer;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.priority-select.priority-low {
-  border-color: #28a745;
-  color: #28a745;
-}
-
-.priority-select.priority-medium {
-  border-color: #ffc107;
-  color: #ffc107;
-}
-
-.priority-select.priority-high {
-  border-color: #dc3545;
-  color: #dc3545;
-}
 
 .action-button {
   padding: 0.25rem 0.5rem;
@@ -382,31 +349,6 @@
   color: #333;
 }
 
-.emoji-selector {
-  display: flex;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.emoji-button {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 0.25rem;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: all 0.2s;
-}
-
-.emoji-button:hover {
-  background: #f8f9fa;
-}
-
-.emoji-button.selected {
-  background: #007bff;
-  border-color: #007bff;
-}
 
 .priority-selector {
   margin: 0.75rem 0;
@@ -524,11 +466,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
-.comment-emoji {
-  font-size: 1.5rem;
-  display: block;
-  margin-bottom: 0.5rem;
-}
 
 .comment-text {
   font-size: 0.9rem;
@@ -697,12 +634,6 @@ div[class*="_compact"] {
   background: rgba(255, 196, 0, 0.6);
 }
 
-.Highlight__emoji {
-  position: absolute;
-  top: -20px;
-  left: 0;
-  font-size: 1.2rem;
-}
 
 .Highlight__part {
   transition: background 0.3s;

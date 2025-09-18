@@ -199,7 +199,7 @@ test.describe('Rectangle Functionality', () => {
 
       await expect(lastIssue).toContainText('New rectangle issue test');
       await expect(lastIssue).toContainText('Rectangle Annotation');
-      await expect(lastIssue.locator('.status-select')).toHaveValue('open');
+      await expect(lastIssue.locator('.status-select')).toHaveValue('not-approved');
     }
   });
 
@@ -433,49 +433,4 @@ test.describe('Rectangle Functionality', () => {
     }
   });
 
-  test('should allow changing priority for rectangle annotations', async ({ page }) => {
-    // Switch to rectangle mode
-    const rectangleButton = page.locator('.mode-button').filter({ hasText: 'Rectangle' });
-    await rectangleButton.click();
-
-    await page.waitForTimeout(3000);
-
-    // Draw a rectangle
-    const dragOverlay = page.locator('.drag-rectangle-overlay.enabled');
-    await dragOverlay.hover({ position: { x: 100, y: 100 } });
-    await page.mouse.down();
-    await page.mouse.move(220, 180);
-    await page.mouse.up();
-
-    await page.waitForTimeout(1000);
-
-    // Change priority and add comment
-    const commentPopup = page.locator('.comment-popup');
-    if (await commentPopup.isVisible({ timeout: 3000 })) {
-      // Verify medium is selected by default
-      await expect(page.locator('.priority-button.selected').filter({ hasText: 'Medium' })).toBeVisible();
-
-      // Change to High priority
-      const highPriorityButton = page.locator('.priority-button').filter({ hasText: 'High' });
-      await highPriorityButton.click();
-      await expect(highPriorityButton).toHaveClass(/selected/);
-
-      // Add comment
-      const commentTextarea = page.locator('.comment-textarea');
-      await commentTextarea.fill('High priority rectangle');
-
-      const confirmButton = page.locator('.confirm-button');
-      await confirmButton.click();
-
-      await page.waitForTimeout(1000);
-
-      // Verify issue was created with high priority
-      const issueRows = page.locator('.issue-row');
-      const lastIssue = issueRows.last();
-      const prioritySelect = lastIssue.locator('.priority-select');
-
-      await expect(prioritySelect).toHaveValue('high');
-      await expect(prioritySelect).toHaveClass(/priority-high/);
-    }
-  });
 });

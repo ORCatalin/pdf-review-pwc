@@ -74,12 +74,11 @@ test.describe('Issues Table', () => {
 
     // Check that the select has the expected options
     const options = statusSelect.locator('option');
-    await expect(options).toHaveCount(3);
+    await expect(options).toHaveCount(2);
 
     // Check for specific status options
-    await expect(statusSelect.locator('option[value="open"]')).toBeVisible();
-    await expect(statusSelect.locator('option[value="in-review"]')).toBeVisible();
-    await expect(statusSelect.locator('option[value="resolved"]')).toBeVisible();
+    await expect(statusSelect.locator('option[value="not-approved"]')).toBeVisible();
+    await expect(statusSelect.locator('option[value="approved"]')).toBeVisible();
   });
 
   test('can change issue status', async ({ page }) => {
