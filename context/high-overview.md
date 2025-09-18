@@ -15,7 +15,6 @@ A professional PDF document review and annotation tool designed for collaborativ
 #### Text Highlighting
 - Select and highlight text passages within PDFs
 - Add contextual comments to highlights
-- Assign emoji indicators for quick visual categorization
 - Persistent highlight storage across sessions
 - Visual feedback with highlight hover tooltips
 - Delete highlights when no longer needed
@@ -36,36 +35,30 @@ A professional PDF document review and annotation tool designed for collaborativ
 - Link issues directly to PDF page numbers and highlights
 
 #### Issue Properties
-- **Status Management**: 
-  - Open (newly created issues)
-  - In Review (under examination)
-  - Resolved (completed/addressed)
-- **Priority Levels**: 
-  - High (critical issues)
-  - Medium (standard importance)
-  - Low (minor concerns)
+- **Status Management**:
+  - Not Approved (issues requiring attention)
+  - Approved (issues that have been reviewed and approved)
 
 #### Issues Table Features
 - Filter by category capabilities
 - Click-to-navigate: Jump directly to issue location in PDF
 - Real-time status updates with dropdown selectors
-- Visual indicators for issues with highlights (📌)
-- Color-coded priority badges
+- Color-coded status badges
 
 ### 4. Interaction Modes
 The application supports three distinct interaction modes:
 
-#### Highlight Mode (🖍️)
+#### Highlight Mode
 - Default mode for text selection and highlighting
 - Create text annotations with comments
 - Full text selection capabilities
 
-#### Rectangle Mode (📐)
+#### Rectangle Mode
 - Draw rectangular annotations
 - Annotate images, charts, or specific areas
 - Useful for non-text content review
 
-#### View-Only Mode (👁️)
+#### View-Only Mode
 - Read-only document viewing
 - Prevents accidental modifications
 - Ideal for final review or presentation
@@ -82,13 +75,11 @@ The application supports three distinct interaction modes:
 - Application title and branding
 - Mode selector buttons with visual feedback
 - Real-time statistics dashboard:
-  - Open issues count
-  - In-review issues count
-  - Resolved issues count
+  - Not Approved issues count
+  - Approved issues count
 
 #### Comment Popup System
 - Modal dialog for adding comments
-- Emoji selector for visual categorization
 - Keyboard shortcuts:
   - Enter: Submit comment
   - Escape: Cancel operation
@@ -98,14 +89,12 @@ The application supports three distinct interaction modes:
 ### 6. Collaborative Features
 
 #### Comment System
-- Text comments with optional emoji indicators
-- Comments linked to specific highlights or rectangles
+- Text comments linked to specific highlights or rectangles
 - Editable comment text
 - Visual comment display in hover tooltips
 
 #### Issue Workflow
-- Status progression tracking (Open → In Review → Resolved)
-- Priority assignment for triage
+- Status tracking (Not Approved ⇔ Approved)
 - Category classification for organization
 - Synchronized updates across all views
 
@@ -142,7 +131,7 @@ The application supports three distinct interaction modes:
 ### Financial Document Review
 - Review financial statements and reports
 - Highlight discrepancies or concerns
-- Track audit findings with priority levels
+- Track audit findings with approval status
 - Collaborate on compliance issues
 
 ### Legal Document Analysis
@@ -155,7 +144,7 @@ The application supports three distinct interaction modes:
 - Review technical documentation
 - Mark errors or inconsistencies
 - Track correction status
-- Prioritize issues for resolution
+- Track issue approval status
 
 ### Educational Document Review
 - Grade and comment on submissions
