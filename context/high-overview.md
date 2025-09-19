@@ -45,6 +45,14 @@ A professional PDF document review and annotation tool designed for collaborativ
 - Real-time status updates with dropdown selectors
 - Color-coded status badges
 
+#### Dual View Modes
+- **Table View**: Traditional issues table with filtering and management
+- **PDF Marker View**: Visual representation of issues directly on PDF
+  - Checkmark icons (✓) for approved issues
+  - Circle icons (○) for not-approved issues
+  - Click markers to navigate to corresponding locations in main PDF viewer
+- Toggle between views with dedicated switch component
+
 ### 4. Interaction Modes
 The application supports three distinct interaction modes:
 
@@ -66,7 +74,9 @@ The application supports three distinct interaction modes:
 ### 5. User Interface Components
 
 #### Split-Panel Layout
-- **Left Panel**: Issues table with filtering and management
+- **Left Panel**: Switchable view area
+  - Table mode: Issues table with filtering and management
+  - PDF mode: Marker PDF viewer showing visual issue indicators
 - **Right Panel**: PDF viewer with annotation tools
 - **Resizable Splitter**: Adjust panel widths to preference
 - Minimum width constraints for usability

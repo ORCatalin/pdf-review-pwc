@@ -7,10 +7,13 @@ pdf-review-pwc/
 │   ├── components/
 │   │   ├── CommentPopup.tsx
 │   │   ├── DragRectangle.tsx
+│   │   ├── IssueMarker.tsx
 │   │   ├── IssuesTable.tsx
+│   │   ├── MarkerPDFViewer.tsx
 │   │   ├── PDFReviewApp.tsx
 │   │   ├── PDFViewer.tsx
-│   │   └── ResizableSplitter.tsx
+│   │   ├── ResizableSplitter.tsx
+│   │   └── ViewModeSwitch.tsx
 │   ├── data/
 │   ├── styles/
 │   ├── types/
