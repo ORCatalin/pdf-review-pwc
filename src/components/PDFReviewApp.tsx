@@ -1,9 +1,10 @@
 import React, { useState, useRef, useCallback } from 'react';
 import IssuesTable from './IssuesTable';
 import PDFViewer from './PDFViewer';
+import MarkerPDFViewer from './MarkerPDFViewer';
+import ViewModeSwitch, { type ViewMode } from './ViewModeSwitch';
 import ResizableSplitter from './ResizableSplitter';
 import type { Issue, IHighlight, RectangleWithComment } from '../types/index';
-import { InteractionMode } from '../types/index';
 import { mockHighlights } from '../data/mockData';
 import { v4 as uuidv4 } from 'uuid';
 import '../styles/PDFReview.css';
@@ -16,7 +17,7 @@ const PDFReviewApp: React.FC = () => {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [rectangles, setRectangles] = useState<RectangleWithComment[]>([]);
   const [pdfUrl] = useState<string>(PRIMARY_PDF_URL);
-  const [currentMode, setCurrentMode] = useState<InteractionMode>(InteractionMode.HIGHLIGHT);
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdfViewerRef = useRef<any>(null);
 
@@ -110,35 +111,47 @@ const PDFReviewApp: React.FC = () => {
     );
   }, []);
 
+  const handleMarkerIssueClick = useCallback((issue: Issue) => {
+    setSelectedIssue(issue);
+
+    // Navigate to the issue in the main PDF viewer
+    if (issue.highlight && pdfViewerRef.current) {
+      pdfViewerRef.current.scrollToHighlight(issue.highlight);
+    } else if (pdfViewerRef.current) {
+      pdfViewerRef.current.scrollToPage(issue.page);
+    }
+  }, []);
+
+  const renderLeftPanel = () => {
+    return (
+      <div className="issues-panel">
+        <ViewModeSwitch
+          currentMode={viewMode}
+          onModeChange={setViewMode}
+        />
+        {viewMode === 'pdf' ? (
+          <MarkerPDFViewer
+            pdfUrl={pdfUrl}
+            issues={issues}
+            onIssueClick={handleMarkerIssueClick}
+          />
+        ) : (
+          <IssuesTable
+            issues={issues}
+            selectedIssue={selectedIssue}
+            onIssueClick={handleIssueClick}
+            onUpdateStatus={handleUpdateIssueStatus}
+          />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="pdf-review-app">
       <div className="pdf-review-header">
         <h1>PDF Review Tool</h1>
         
-        <div className="mode-selector">
-          <button
-            className={`mode-button ${currentMode === InteractionMode.HIGHLIGHT ? 'active' : ''}`}
-            onClick={() => setCurrentMode(InteractionMode.HIGHLIGHT)}
-            title="Highlight Text Mode"
-          >
-Highlight
-          </button>
-          <button
-            className={`mode-button ${currentMode === InteractionMode.RECTANGLE ? 'active' : ''}`}
-            onClick={() => setCurrentMode(InteractionMode.RECTANGLE)}
-            title="Draw Rectangle Mode"
-          >
-Rectangle
-          </button>
-          <button
-            className={`mode-button ${currentMode === InteractionMode.VIEW_ONLY ? 'active' : ''}`}
-            onClick={() => setCurrentMode(InteractionMode.VIEW_ONLY)}
-            title="View Only Mode"
-          >
-View Only
-          </button>
-        </div>
 
         <div className="header-controls">
           <div className="stats">
@@ -154,14 +167,7 @@ View Only
       
       <div className="pdf-review-content">
         <ResizableSplitter
-          leftPanel={
-            <IssuesTable
-              issues={issues}
-              selectedIssue={selectedIssue}
-              onIssueClick={handleIssueClick}
-              onUpdateStatus={handleUpdateIssueStatus}
-            />
-          }
+          leftPanel={renderLeftPanel()}
           rightPanel={
             <PDFViewer
               ref={pdfViewerRef}
@@ -173,7 +179,6 @@ View Only
               onDeleteHighlight={handleDeleteHighlight}
               onRectangleDrawn={handleRectangleDrawn}
               rectangles={rectangles}
-              currentMode={currentMode}
             />
           }
           initialLeftWidth={35}

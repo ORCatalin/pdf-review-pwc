@@ -24,7 +24,6 @@ interface PDFViewerProps {
   onDeleteHighlight: (highlightId: string) => void;
   onRectangleDrawn: (rectangle: RectangleWithComment) => void;
   rectangles: RectangleWithComment[];
-  currentMode: InteractionMode;
 }
 
 interface PendingHighlight {
@@ -41,6 +40,7 @@ interface PDFViewerState {
   currentPageNumber: number;
   pendingRectangle: Omit<RectangleWithComment, 'id' | 'comment'> | null;
   temporaryHighlight: IHighlight | null;
+  currentMode: InteractionMode;
 }
 
 class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
@@ -56,6 +56,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
     currentPageNumber: 1,
     pendingRectangle: null,
     temporaryHighlight: null,
+    currentMode: InteractionMode.HIGHLIGHT,
   };
 
   scrollToHighlight = (highlight: IHighlight) => {
@@ -65,10 +66,18 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
   };
 
   scrollToPage = (pageNumber: number) => {
-    const pageElement = document.querySelector(`.page[data-page-number="${pageNumber}"]`);
+    // Scope page element search to this PDF viewer container
+    const pageElement = this.containerRef.current?.querySelector(`.page[data-page-number="${pageNumber}"]`);
     if (pageElement) {
       pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  };
+
+  handleModeChange = (mode: InteractionMode) => {
+    this.setState({ currentMode: mode }, () => {
+      // Re-render rectangles when mode changes (to handle visibility issues)
+      this.renderRectanglesDebounced();
+    });
   };
 
   handleTextSelection = (
@@ -78,7 +87,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
     transformSelection: () => void
   ) => {
     // Only allow text highlighting in HIGHLIGHT mode
-    if (this.props.currentMode !== InteractionMode.HIGHLIGHT) {
+    if (this.state.currentMode !== InteractionMode.HIGHLIGHT) {
       hideTipAndSelection();
       return;
     }
@@ -112,7 +121,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
     if (!container) return { x: 100, y: 100 };
 
     const rect = container.getBoundingClientRect();
-    const pageElement = document.querySelector(`.page[data-page-number="${position.pageNumber}"]`);
+    const pageElement = container.querySelector(`.page[data-page-number="${position.pageNumber}"]`);
     
     if (!pageElement) return { x: 100, y: 100 };
 
@@ -159,7 +168,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
         id: uuidv4(),
         position: pendingHighlight.position,
         content: pendingHighlight.content,
-        comment: { text: comment.text, emoji: comment.emoji || '📝' },
+        comment: { text: comment.text, emoji: '📝' },
         timestamp: Date.now(),
       };
 
@@ -170,7 +179,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
       const newRectangle: RectangleWithComment = {
         id: uuidv4(),
         ...pendingRectangle,
-        comment: { text: comment.text, emoji: comment.emoji || '📝' },
+        comment: { text: comment.text, emoji: '📝' },
       };
 
       this.props.onRectangleDrawn(newRectangle);
@@ -204,8 +213,8 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
     const container = this.containerRef.current;
     if (!container) return;
 
-    // Find the page element to get viewport position
-    const pageElement = document.querySelector(`.page[data-page-number="${rectangle.pageNumber}"]`);
+    // Find the page element to get viewport position (scoped to this viewer)
+    const pageElement = container.querySelector(`.page[data-page-number="${rectangle.pageNumber}"]`);
     if (!pageElement) return;
 
     const containerRect = container.getBoundingClientRect();
@@ -236,8 +245,10 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
   };
 
   renderRectanglesOnPages = () => {
-    // Clean up existing rectangle elements
-    document.querySelectorAll('.page-rectangle-container').forEach(el => el.remove());
+    // Clean up existing rectangle elements (scoped to this viewer)
+    if (this.containerRef.current) {
+      this.containerRef.current.querySelectorAll('.page-rectangle-container').forEach(el => el.remove());
+    }
 
     // Group rectangles by page
     const rectanglesByPage = this.props.rectangles.reduce((acc, rect) => {
@@ -250,7 +261,8 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
 
     // Render rectangles on each page
     Object.entries(rectanglesByPage).forEach(([pageNum, rects]) => {
-      const pageElement = document.querySelector(`.page[data-page-number="${pageNum}"]`);
+      // Scope page element search to this PDF viewer container
+      const pageElement = this.containerRef.current?.querySelector(`.page[data-page-number="${pageNum}"]`);
       if (!pageElement) return;
 
       // Create container for rectangles on this page
@@ -293,7 +305,7 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
           const container = this.containerRef.current;
           if (!container) return;
 
-          const currentPageElement = document.querySelector(`.page[data-page-number="${rect.pageNumber}"]`);
+          const currentPageElement = container.querySelector(`.page[data-page-number="${rect.pageNumber}"]`);
           if (!currentPageElement) return;
 
           const containerRect = container.getBoundingClientRect();
@@ -354,10 +366,6 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
       this.renderRectanglesDebounced();
     }
 
-    // Re-render rectangles when mode changes (to handle visibility issues)
-    if (prevProps.currentMode !== this.props.currentMode) {
-      this.renderRectanglesDebounced();
-    }
 
     // Re-render rectangles when comment popup state changes (to handle mode switching)
     if (prevState.showCommentPopup !== this.state.showCommentPopup) {
@@ -393,8 +401,8 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
 
 
   render() {
-    const { pdfUrl, highlights, selectedHighlight, onRectangleDrawn, currentMode } = this.props;
-    const { showCommentPopup, commentPosition, currentPageNumber, temporaryHighlight } = this.state;
+    const { pdfUrl, highlights, selectedHighlight, onRectangleDrawn } = this.props;
+    const { showCommentPopup, commentPosition, currentPageNumber, temporaryHighlight, currentMode } = this.state;
 
     const isRectangleMode = currentMode === InteractionMode.RECTANGLE;
     
@@ -402,8 +410,31 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
     const allHighlights = temporaryHighlight ? [...highlights, temporaryHighlight] : highlights;
 
     return (
-      <div className="pdf-viewer-container" ref={this.containerRef}>
+      <div className="pdf-viewer-container main-pdf-viewer" ref={this.containerRef}>
         <div className="pdf-viewer-toolbar">
+          <div className="mode-selector">
+            <button
+              className={`mode-button ${currentMode === InteractionMode.HIGHLIGHT ? 'active' : ''}`}
+              onClick={() => this.handleModeChange(InteractionMode.HIGHLIGHT)}
+              title="Highlight Text Mode"
+            >
+              Highlight
+            </button>
+            <button
+              className={`mode-button ${currentMode === InteractionMode.RECTANGLE ? 'active' : ''}`}
+              onClick={() => this.handleModeChange(InteractionMode.RECTANGLE)}
+              title="Draw Rectangle Mode"
+            >
+              Rectangle
+            </button>
+            <button
+              className={`mode-button ${currentMode === InteractionMode.VIEW_ONLY ? 'active' : ''}`}
+              onClick={() => this.handleModeChange(InteractionMode.VIEW_ONLY)}
+              title="View Only Mode"
+            >
+              View Only
+            </button>
+          </div>
           <span className="toolbar-info">
             {currentMode === InteractionMode.HIGHLIGHT && 'Select text to add highlights'}
             {currentMode === InteractionMode.RECTANGLE && 'Click and drag to draw rectangles'}
@@ -422,7 +453,8 @@ class PDFViewer extends Component<PDFViewerProps, PDFViewerState> {
                 onSelectionFinished={this.handleTextSelection}
                 scrollRef={() => {}}
                 onScrollChange={() => {
-                  const pages = document.querySelectorAll('.page');
+                  // Scope pages query to this PDF viewer container
+                  const pages = this.containerRef.current?.querySelectorAll('.page') || [];
                   let currentPage = 1;
                   pages.forEach((page) => {
                     const rect = page.getBoundingClientRect();

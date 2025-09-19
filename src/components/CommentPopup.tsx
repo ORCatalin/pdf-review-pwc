@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 interface CommentPopupProps {
-  onConfirm: (comment: { text: string }) => void;
+  onConfirm: (comment: { text: string; emoji?: string }) => void;
   onCancel: () => void;
   position: { x: number; y: number };
-  initialComment?: { text: string };
+  initialComment?: { text: string; emoji?: string };
 }
 
 const CommentPopup: React.FC<CommentPopupProps> = ({
@@ -23,7 +23,7 @@ const CommentPopup: React.FC<CommentPopupProps> = ({
 
   const handleSubmit = () => {
     if (comment.trim()) {
-      onConfirm({ text: comment.trim() });
+      onConfirm({ text: comment.trim(), emoji: '📝' });
     }
   };
 

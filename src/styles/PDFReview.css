@@ -679,3 +679,200 @@ div[class*="_compact"] {
 ::-moz-selection {
   background: rgba(0, 123, 255, 0.3);
 }
+
+/* View Mode Switch Styles */
+.view-mode-switch {
+  display: flex;
+  gap: 0;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.switch-button {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #6c757d;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.switch-button:first-child {
+  border-right: 1px solid #dee2e6;
+}
+
+.switch-button:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.switch-button.active {
+  background: #007bff;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+/* Issues Panel Container */
+.issues-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+  background: white;
+}
+
+.issues-panel .marker-pdf-viewer-container {
+  flex: 1;
+  margin: -1rem -1rem -1rem -1rem;
+  border-radius: 0;
+}
+
+/* Marker PDF Viewer Styles */
+.marker-pdf-viewer-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: white;
+}
+
+.marker-pdf-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
+}
+
+.marker-pdf-content {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  background: #525659;
+  z-index: 1;
+}
+
+/* Issue Marker Styles */
+.issue-marker {
+  position: absolute;
+  z-index: 25;
+  pointer-events: all;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.marker-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.marker-wrapper:hover {
+  transform: scale(1.1);
+}
+
+.marker-icon {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: filter 0.2s ease;
+}
+
+.marker-icon:hover {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.marker-icon.approved {
+  color: #22c55e;
+}
+
+.marker-icon.not-approved {
+  color: #ef4444;
+}
+
+.marker-label {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Page Marker Container */
+.page-marker-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Update PDF page classes for marker viewer */
+.marker-page {
+  position: relative;
+}
+
+/* Marker hover tooltip styling */
+.marker-wrapper[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  max-width: 200px;
+  word-wrap: break-word;
+  z-index: 30;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* PDF Viewer Differentiation */
+.main-pdf-viewer {
+  position: relative;
+}
+
+.marker-pdf-viewer {
+  position: relative;
+}
+
+/* Ensure rectangles only appear in main PDF viewer */
+.main-pdf-viewer .page-rectangle-container {
+  z-index: 10;
+}
+
+/* Ensure markers only appear in marker PDF viewer */
+.marker-pdf-viewer .page-marker-container {
+  z-index: 20;
+}
+
+/* Prevent marker containers from appearing in main viewer */
+.main-pdf-viewer .page-marker-container {
+  display: none !important;
+}
+
+/* Prevent rectangle containers from appearing in marker viewer */
+.marker-pdf-viewer .page-rectangle-container {
+  display: none !important;
+}
